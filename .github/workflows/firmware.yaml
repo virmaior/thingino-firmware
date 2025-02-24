@@ -9,7 +9,7 @@ on:
         type: boolean
         description: 'Disable Telegram notifications'
         required: false
-        default: false
+        default: true
       tg_scratch:
         type: boolean
         description: 'Use TG scratch channel'
@@ -20,11 +20,11 @@ on:
         description: 'Enable build time graph'
         required: false
         default: false
-      teacup_only:
+      atom_only:
         type: boolean
-        description: 'Only build Tea Cup profile'
+        description: 'Only build ATOM profile'
         required: false
-        default: false
+        default: true
       debug_enabled:
         type: boolean
         description: 'Debug: Generate dummy image files'
@@ -123,8 +123,8 @@ jobs:
       - name: Generate device matrix
         id: set-matrix
         run: |
-          if [[ "${{ github.event.inputs.teacup_only }}" == 'true' ]]; then
-            CONFIGS=$(find configs/cameras/ -type f | sort | awk -F '/' '{print $(NF)}' | awk NF | grep 'teacup')
+          if [[ "${{ github.event.inputs.atom_only }}" == 'true' ]]; then
+            CONFIGS=$(find configs/cameras/ -type f | sort | awk -F '/' '{print $(NF)}' | awk NF | grep 'atom')
           else
             CONFIGS=$(find configs/cameras/ -type f | sort | awk -F '/' '{print $(NF)}' | awk NF)
           fi
