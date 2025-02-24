@@ -123,8 +123,8 @@ jobs:
       - name: Generate device matrix
         id: set-matrix
         run: |
-          if [[ "${{ github.event.inputs.teacup_only }}" == 'true' ]]; then
-            CONFIGS=$(find configs/cameras/ -type f | sort | awk -F '/' '{print $(NF)}' | awk NF | grep 'teacup')
+          if [[ "${{ github.event.inputs.atom_only }}" == 'true' ]]; then
+            CONFIGS=$(find configs/cameras/ -type f | sort | awk -F '/' '{print $(NF)}' | awk NF | grep 'atom')
           else
             CONFIGS=$(find configs/cameras/ -type f | sort | awk -F '/' '{print $(NF)}' | awk NF)
           fi
