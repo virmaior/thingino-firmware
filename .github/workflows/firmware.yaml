@@ -20,11 +20,11 @@ on:
         description: 'Enable build time graph'
         required: false
         default: false
-      teacup_only:
+      atom_only:
         type: boolean
-        description: 'Only build Tea Cup profile'
+        description: 'Only build ATOM profile'
         required: false
-        default: false
+        default: true
       debug_enabled:
         type: boolean
         description: 'Debug: Generate dummy image files'
