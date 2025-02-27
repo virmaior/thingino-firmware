@@ -6,7 +6,7 @@ on:
         type: boolean
         description: 'Disable Telegram notifications'
         required: false
-        default: false
+        default: true
       tg_scratch:
         type: boolean
         description: 'Use TG scratch channel'
