@@ -17,9 +17,9 @@ on:
         description: 'Enable build time graph'
         required: false
         default: false
-      atom_only:
+      aw_only:
         type: boolean
-        description: 'Only build ATOM profile'
+        description: 'Only build ATOM and wyze_c3_t31x_rtl profiles'
         required: false
         default: true
       debug_enabled:
@@ -120,8 +120,8 @@ jobs:
       - name: Generate device matrix
         id: set-matrix
         run: |
-          if [[ "${{ github.event.inputs.atom_only }}" == 'true' ]]; then
-            CONFIGS=$(find configs/cameras/ -type f | sort | awk -F '/' '{print $(NF)}' | awk NF | grep 'atom')
+          if [[ "${{ github.event.inputs.aw_only }}" == 'true' ]]; then
+            CONFIGS=$(find configs/cameras/ -type f | sort | awk -F '/' '{print $(NF)}' | awk NF | grep 'atom|wyze_c3_t31x_rtl')
           else
             CONFIGS=$(find configs/cameras/ -type f | sort | awk -F '/' '{print $(NF)}' | awk NF)
           fi
