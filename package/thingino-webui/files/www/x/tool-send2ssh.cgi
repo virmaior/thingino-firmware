@@ -3,9 +3,6 @@
 <%
 page_title="Send to SSH"
 
-# read values from configs
-. $WEB_CONFIG_FILE
-
 defaults() {
 	default_for ssh_port "22"
 	default_for ssh_username "root"
@@ -51,7 +48,7 @@ defaults
 
 <div class="alert alert-dark ui-debug d-none">
 <h4 class="mb-3">Debug info</h4>
-<% ex "grep ^ssh_ $WEB_CONFIG_FILE" %>
+<% ex "grep ^ssh_ $CONFIG_FILE" %>
 </div>
 
 <%in _footer.cgi %>

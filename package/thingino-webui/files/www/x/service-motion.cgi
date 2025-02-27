@@ -2,9 +2,6 @@
 <%in _common.cgi %>
 <%
 page_title="Motion Guard"
-
-# read values from configs
-. $WEB_CONFIG_FILE
 %>
 <%in _header.cgi %>
 
@@ -101,7 +98,7 @@ send2_targets.forEach((x) => {
 
 <div class="alert alert-dark ui-debug d-none">
 <h4 class="mb-3">Debug info</h4>
-<% ex "grep ^motion_ $WEB_CONFIG_FILE" %>
+<% ex "grep ^motion_ $CONFIG_FILE" %>
 </div>
 
 <%in _footer.cgi %>

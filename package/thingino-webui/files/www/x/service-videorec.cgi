@@ -7,9 +7,6 @@ MOUNTS=$(awk '/cif|fat|nfs|smb/{print $2}' /etc/mtab)
 RECORD_CTL="/etc/init.d/S96record"
 RECORD_FILENAME_FB="%Y%m%d/%Y%m%dT%H%M%S"
 
-# read values from configs
-. $WEB_CONFIG_FILE
-
 defaults() {
 	default_for record_enabled "false"
 	default_for record_device_path "$(hostname)/records"
@@ -94,7 +91,7 @@ defaults
 
 <div class="alert alert-dark ui-debug d-none">
 <h4 class="mb-3">Debug info</h4>
-<% ex "grep ^record_ $WEB_CONFIG_FILE" %>
+<% ex "grep ^record_ $CONFIG_FILE" %>
 </div>
 
 <script>

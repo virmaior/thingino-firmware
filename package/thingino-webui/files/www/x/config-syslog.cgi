@@ -3,9 +3,6 @@
 <%
 page_title="Remote Logging"
 
-# read values from configs
-. $WEB_CONFIG_FILE
-
 defaults() {
 	default_for rsyslog_port "514"
 	default_for rsyslog_local "false"
@@ -47,7 +44,7 @@ defaults
 
 <div class="alert alert-dark ui-debug d-none">
 <h4 class="mb-3">Debug info</h4>
-<% ex "grep ^rsyslog_ $WEB_CONFIG_FILE" %>
+<% ex "grep ^rsyslog_ $CONFIG_FILE" %>
 </div>
 
 <%in _footer.cgi %>

@@ -3,9 +3,6 @@
 <%
 page_title="Telegram Bot"
 
-# read values from configs
-. $WEB_CONFIG_FILE
-
 params="enabled token users"
 for i in $(seq 0 9); do
 	params="$params command_$i description_$i script_$i"
@@ -112,7 +109,7 @@ default_for telegrambot_caption "%hostname, %datetime"
 
 <div class="alert alert-dark ui-debug d-none">
 <h4 class="mb-3">Debug info</h4>
-<% ex "grep ^telegrambot_ $WEB_CONFIG_FILE" %>
+<% ex "grep ^telegrambot_ $CONFIG_FILE" %>
 </div>
 
 <%in _tg_bot.cgi %>

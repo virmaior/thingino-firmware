@@ -1,17 +1,28 @@
 #!/bin/sh
 
-. /etc/init.d/rc.common
+. /usr/share/common
+
+start() {
+	echo "Checking sysupgrade..."
+
+	[ "true" = "$sysupgrade_complete" ] && exit 0
+
+	fw_setenv sysupgrade_complete true
+	# play_sound thingino.pcm
+}
+
+stop() {
+	echo "Checking for upgrade..."
+
+	[ -f "/tmp/upgrade.me" ] && sysupgrade -p
+}
 
 case "$1" in
 	start)
-		starting
-		[ "true" = "$(fw_printenv -n sysupgrade_complete)" ] && ok && quit
-		run "fw_setenv sysupgrade_complete true"
-		# play_sound thingino.pcm
+		start
 		;;
 	stop)
-		stopping
-		[ -f "/tmp/upgrade.me" ] && sysupgrade -p
+		stop
 		;;
 	*)
 		echo "Usage: $0 {start|stop}"

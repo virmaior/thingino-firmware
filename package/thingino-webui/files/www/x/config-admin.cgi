@@ -3,9 +3,6 @@
 <%
 page_title="Admin profile"
 
-# read values from configs
-. $WEB_CONFIG_FILE
-
 if [ "POST" = "$REQUEST_METHOD" ]; then
 	error=""
 
@@ -54,7 +51,7 @@ will be used as sender identity for emails originating from this camera.</p>
 
 <div class="alert alert-dark ui-debug d-none">
 <h4 class="mb-3">Debug info</h4>
-<% ex "grep ^admin_ $WEB_CONFIG_FILE" %>
+<% ex "grep ^admin_ $CONFIG_FILE" %>
 </div>
 
 <%in _footer.cgi %>

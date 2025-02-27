@@ -3,9 +3,6 @@
 <%
 page_title="Send to Telegram"
 
-# read values from configs
-. $WEB_CONFIG_FILE
-
 defaults() {
 	default_for telegram_attach_snapshot "true"
 	default_for telegram_attach_video "true"
@@ -59,7 +56,7 @@ defaults
 
 <div class="alert alert-dark ui-debug d-none">
 <h4 class="mb-3">Debug info</h4>
-<% ex "grep ^telegram_ $WEB_CONFIG_FILE" %>
+<% ex "grep ^telegram_ $CONFIG_FILE" %>
 </div>
 
 <%in _tg_bot.cgi %>

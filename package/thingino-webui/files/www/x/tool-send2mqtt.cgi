@@ -5,9 +5,6 @@ page_title="Send to MQTT"
 
 [ -f /usr/bin/mosquitto_pub ] || redirect_to "/" "danger" "MQTT client is not a part of your firmware."
 
-# read values from configs
-. $WEB_CONFIG_FILE
-
 defaults() {
 	default_for mqtt_client_id "${network_macaddr//:/}"
 	default_for mqtt_port "1883"
@@ -90,7 +87,7 @@ defaults
 
 <div class="alert alert-dark ui-debug d-none">
 <h4 class="mb-3">Debug info</h4>
-<% ex "grep ^mqtt_ $WEB_CONFIG_FILE" %>
+<% ex "grep ^mqtt_ $CONFIG_FILE" %>
 </div>
 
 <script>

@@ -2,7 +2,7 @@
 
 DAEMON_ARGS="-d"
 
-. /etc/init.d/rc.common
+. /usr/share/common
 
 start() {
 	starting
@@ -11,12 +11,15 @@ start() {
 
 stop() {
 	stopping
-	stop_daemon_process
+	stop_daemon
 }
 
 case "$1" in
-	start | stop)
-		$1
+	start)
+		start
+		;;
+	stop)
+		stop
 		;;
 	restart | reload)
 		stop || true
