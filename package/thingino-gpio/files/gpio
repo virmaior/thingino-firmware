@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. /sbin/common
+. /usr/share/common
 
 gpiodir=/sys/class/gpio
 
@@ -31,11 +31,6 @@ Legacy:
 list_pins() {
 	grep -q /sys/kernel/debug /proc/mounts || mount -t debugfs none /sys/kernel/debug
 	cat /sys/kernel/debug/gpio
-}
-
-log_and_run() {
-	[ -n "$DEBUG" ] && echo -e "$1"
-	eval "$1"
 }
 
 claim_pin() {

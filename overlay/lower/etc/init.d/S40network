@@ -1,22 +1,25 @@
 #!/bin/sh
 
-. /etc/init.d/rc.common
+. /usr/share/common
 
 start() {
-	starting
-	run "ifup -v -a"
-	check_result
+	echo "Starting network..."
+
+	ifup -v -a
 }
 
 stop() {
-	stopping
-	run "ifdown -v -a"
-	check_result
+	echo "Stopping network..."
+
+	ifdown -v -a
 }
 
 case "$1" in
-	start | stop)
-		$1
+	start)
+		start
+		;;
+	stop)
+		stop
 		;;
 	reload | restart)
 		stop

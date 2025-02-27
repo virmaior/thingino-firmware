@@ -18,7 +18,7 @@ default_for rtsp_password "thingino"
 rtsp_port=$(prudyntcfg get rtsp.port)
 default_for rtsp_port "554"
 
-onvif_port=$(awk -F'=' '/^port=/{print $2}' /etc/onvif.conf)
+onvif_port=$(awk -F= '/^port=/{print $2}' /etc/onvif.conf)
 default_for onvif_port "80"
 
 rtsp_endpoint_ch0=$(prudyntcfg get stream0.rtsp_endpoint | tr -d '"')
@@ -55,9 +55,8 @@ if [ "POST" = "$REQUEST_METHOD" ]; then
 		fi
 
 		/etc/init.d/S95prudynt restart >/dev/null
-		update_caminfo
-		redirect_to $SCRIPT_NAME
 	fi
+	redirect_to $SCRIPT_NAME
 fi
 %>
 <%in _header.cgi %>

@@ -3,9 +3,6 @@
 <%
 page_title="Web Interface"
 
-# read values from configs
-. $WEB_CONFIG_FILE
-
 defaults() {
 	default_for ui_username "$USER"
 }
@@ -55,7 +52,7 @@ defaults
 
 <div class="alert alert-dark ui-debug d-none">
 <h4 class="mb-3">Debug info</h4>
-<% ex "grep ^webui_ $WEB_CONFIG_FILE" %>
+<% ex "grep ^webui_ $CONFIG_FILE" %>
 <% ex "cat /etc/httpd.conf" %>
 </div>
 

@@ -1,12 +1,4 @@
-day_night_color=true
-day_night_ir850=true
-day_night_ir940=false
-day_night_ircut=true
-day_night_max=15000
-day_night_min=500
-day_night_white=false
 disable_eth=true
-enable_updates=true
 gpio_button=54
 gpio_ircds=7
 gpio_ircut=57 58
@@ -18,4 +10,4 @@ gpio_motor_v=40 46 45 39
 gpio_speaker=63O
 motor_maxstep_h 3920
 motor_maxstep_v 400
-wlandev=8188fu
+wlan_module=8188fu

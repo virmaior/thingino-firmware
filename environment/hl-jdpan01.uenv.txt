@@ -1,12 +1,4 @@
-day_night_color=true
-day_night_ir850=false
-day_night_ir940=true
-day_night_ircut=true
-day_night_max=15000
-day_night_min=500
-day_night_white=false
 disable_eth=true
-enable_updates=true
 gpio_button=6
 gpio_default=25ID 26IDU 38O 39O 58o 58O
 gpio_ir940=60
@@ -21,5 +13,5 @@ gpio_speaker=7
 gpio_wlan=58O
 motor_maxstep_h=4000
 motor_maxstep_v=550
-wlandev=atbm6031
-wlandevopts=atbm_printk_mask=0
+wlan_module=atbm6031
+wlan_module_opts=atbm_printk_mask=0

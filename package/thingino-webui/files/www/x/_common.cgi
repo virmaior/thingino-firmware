@@ -9,8 +9,11 @@ STR_NOT_SUPPORTED="not supported on this system"
 STR_PASSWORD_TO_PSK="Plain-text password will be automatically converted to a PSK upon submission"
 STR_SUPPORTS_STRFTIME="Supports <a href=\"https://strftime.net/\" target=\"_blank\">strftime</a> format"
 
-WEB_CONFIG_FILE="/etc/web.conf"
-[ -f "$WEB_CONFIG_FILE" ] || touch "$WEB_CONFIG_FILE"
+ENV_DUMP_FILE="/tmp/environment"
+[ -f "$ENV_DUMP_FILE" ] && . "$ENV_DUMP_FILE"
+
+CONFIG_FILE="/etc/web.conf"
+[ -f "$CONFIG_FILE" ] && . "$CONFIG_FILE"
 
 pagename=$(basename "$SCRIPT_NAME")
 pagename="${pagename%%.*}"
@@ -23,12 +26,6 @@ webui_log=/tmp/webui.log
 
 # read from files
 ws_token="$(cat /run/prudynt_websocket_token)"
-
-ensure_dir() {
-	[ -d "$1" ] && return
-	echo "Directory $1 does not exist. Creating" >> $webui_log
-	mkdir -p "$1"
-}
 
 # name, text
 error_if_empty() {
@@ -403,7 +400,7 @@ html_title() {
 }
 
 html_theme() {
-	test -f "$WEB_CONFIG_FILE" && webui_theme=$(awk -F= '/webui_theme/{print $2}' "$WEB_CONFIG_FILE" | tr -d '"')
+	test -f "$CONFIG_FILE" && webui_theme=$(awk -F= '/webui_theme/{print $2}' "$CONFIG_FILE" | tr -d '"')
 	case "$webui_theme" in
 		dark | light)
 			echo -n $webui_theme
@@ -513,14 +510,7 @@ progressbar() {
 }
 
 read_from_config() {
-	awk -F= "/^$1/{print \$2}" $WEB_CONFIG_FILE
-}
-
-read_from_env() {
-	local tmpfile=$(mktemp -u)
-	fw_printenv | grep ^$1_ | sed -E "s/=(.+)$/=\"\\1\"/" > $tmpfile
-	. $tmpfile
-	rm $tmpfile
+	awk -F= "/^$1/{print \$2}" $CONFIG_FILE
 }
 
 # read_from_post "plugin" "params"
@@ -583,6 +573,7 @@ sanitize() {
 
 sanitize4web() {
 	local n=$1
+	[ -z "$n" ] && return
 	# convert html entities
 	eval $n=$(echo \${$n//\\\"/\&quot\;})
 	eval $n=$(echo \${$n//\$/\\\$})
@@ -596,7 +587,7 @@ save2config() {
 	echo "$1" > "$tmp2file"
 
 	tmp1file="$(mktemp -u)"
-	cp "$WEB_CONFIG_FILE" "$tmp1file"
+	cp "$CONFIG_FILE" "$tmp1file"
 	while read -r line; do
 		[ -z "$line" ] && continue
 		name="${line%%=*}"
@@ -607,8 +598,13 @@ save2config() {
 
 	sort -o -u "$tmp1file" "$tmpfile"
 	sed -i '/^$/d' "$tmp1file"
-	mv "$tmp1file" "$WEB_CONFIG_FILE"
+	mv "$tmp1file" "$CONFIG_FILE"
 	rm "$tmp2file"
+}
+
+refresh_env_dump() {
+	fw_printenv | sort | sed -E 's/=(.*)$/="\1"/' > "$ENV_DUMP_FILE"
+	. $ENV_DUMP_FILE
 }
 
 save2env() {
@@ -616,6 +612,7 @@ save2env() {
 	echo -e "$*" >> $tmpfile
 	fw_setenv -s $tmpfile
 	rm $tmpfile
+	refresh_env_dump
 }
 
 set_error_flag() {

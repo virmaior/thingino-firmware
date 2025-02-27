@@ -6,9 +6,6 @@ page_title="Send via scp"
 SCP_KEY="/root/.ssh/id_dropbear"
 [ -f $SCP_KEY ] || dropbearkey -t ed25519 -f $SCP_KEY
 
-# read values from configs
-. $WEB_CONFIG_FILE
-
 defaults() {
 	default_for scp_port "22"
 	default_for scp_user "root"
@@ -63,7 +60,7 @@ defaults
 
 <div class="alert alert-dark ui-debug d-none">
 <h4 class="mb-3">Debug info</h4>
-<% ex "grep ^scp_ $WEB_CONFIG_FILE" %>
+<% ex "grep ^scp_ $CONFIG_FILE" %>
 <% ex "xxd $SCP_KEY" %>
 </div>
 

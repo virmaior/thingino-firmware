@@ -2,23 +2,28 @@
 
 DAEMON_ARGS="-f -c /etc/cron/crontabs"
 
-. /etc/init.d/rc.common
+. /usr/share/common
 
 start() {
-	starting
+	echo "Starting crond..."
+
 	[ -f $DAEMON_FULL ] || quit "Disabled"
 	start_daemon
 }
 
 stop() {
-	stopping
+	echo "Stopping crond..."
+
 	[ -f $DAEMON_FULL ] || quit "Disabled"
-	stop_daemon_with_pid
+	stop_daemon
 }
 
 case "$1" in
-	start | stop)
-		$1
+	start)
+		start
+		;;
+	stop)
+		stop
 		;;
 	reload | restart)
 		stop

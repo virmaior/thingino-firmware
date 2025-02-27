@@ -3,9 +3,6 @@
 <%
 page_title="Send to Webhook"
 
-# read values from configs
-. $WEB_CONFIG_FILE
-
 defaults() {
 	default_for webhook_attach_snapshot "true"
 }
@@ -48,7 +45,7 @@ defaults
 
 <div class="alert alert-dark ui-debug d-none">
 <h4 class="mb-3">Debug info</h4>
-<% ex "grep ^webhook_ $WEB_CONFIG_FILE" %>
+<% ex "grep ^webhook_ $CONFIG_FILE" %>
 </div>
 
 <%in _footer.cgi %>

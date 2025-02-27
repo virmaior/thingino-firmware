@@ -3,9 +3,6 @@
 <%
 page_title="Send to FTP"
 
-# read values from configs
-. $WEB_CONFIG_FILE
-
 defaults() {
 	default_for "ftp_port" "21"
 	default_for "ftp_template" "${network_hostname}-%Y%m%d-%H%M%S"
@@ -63,7 +60,7 @@ defaults
 
 <div class="alert alert-dark ui-debug d-none">
 <h4 class="mb-3">Debug info</h4>
-<% ex "grep ^ftp_ $WEB_CONFIG_FILE" %>
+<% ex "grep ^ftp_ $CONFIG_FILE" %>
 </div>
 
 <%in _footer.cgi %>

@@ -3,9 +3,6 @@
 <%
 page_title="Send to email"
 
-# read values from configs
-. $WEB_CONFIG_FILE
-
 defaults() {
 	default_for email_attach_snapshot "false"
 	default_for email_attach_video "true"
@@ -90,7 +87,7 @@ defaults
 
 <div class="alert alert-dark ui-debug d-none">
 <h4 class="mb-3">Debug info</h4>
-<% ex "grep ^email_ $WEB_CONFIG_FILE" %>
+<% ex "grep ^email_ $CONFIG_FILE" %>
 </div>
 
 <script>

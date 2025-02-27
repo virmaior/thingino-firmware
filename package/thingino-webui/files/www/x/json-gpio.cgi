@@ -4,8 +4,9 @@
 # @params: n - name, s -state
 [ -n "$QUERY_STRING" ] && eval $(echo "$QUERY_STRING" | sed "s/&/;/g")
 
-[ -z "$n" ] && json_error "Required parameter 'n' is not set"
-pin=$(fw_printenv -n $n)
+[ -z "$n" ] && json_error "Required parameter '$n' is not set"
+
+eval pin=\$$n
 [ -z "$pin" ] && json_error "GPIO is not found"
 
 if [ "$s" -eq 0 ] || [ "$s" -eq 1 ]; then

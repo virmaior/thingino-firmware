@@ -1,20 +1,25 @@
 #!/bin/sh
 
-. /etc/init.d/rc.common
+. /usr/share/common
 
 start() {
-	starting
+	echo "Starting Telegram bot daemon..."
+
 	start_daemon
 }
 
 stop() {
-	stopping
-	stop_daemon_with_pid
+	echo "Stopping Telegram bot daemon..."
+
+	stop_daemon
 }
 
 case "$1" in
-	start | stop)
-		$1
+	start)
+		start
+		;;
+	stop)
+		stop
 		;;
 	reload | restart)
 		stop
