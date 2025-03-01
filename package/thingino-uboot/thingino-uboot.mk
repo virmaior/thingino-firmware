@@ -552,6 +552,9 @@ endef
 
 ifeq ($(BR2_PACKAGE_THINGINO_UBOOT)$(BR_BUILDING),yy)
 
+#
+# Set internal variables for flash controller
+#
 ifeq ($(BR2_PACKAGE_THINGINO_UBOOT_FLASH_CONTROLLER_JZ_SFC),y)
 	UBOOT_FLASH_CONTROLLER := "jz_sfc"
 else ifeq ($(BR2_PACKAGE_THINGINO_UBOOT_FLASH_CONTROLLER_SFC_NAND),y)
@@ -568,6 +571,9 @@ else ifeq ($(BR2_PACKAGE_THINGINO_UBOOT_FLASH_CONTROLLER_CUSTOM),y)
 	UBOOT_FLASH_CONTROLLER := $(BR2_PACKAGE_THINGINO_UBOOT_FLASH_CONTROLLER_CUSTOM_STRING)
 endif
 
+#
+# Calculate reserved memory values and export to uenv.txt
+#
 define RMEM_SET_VALUE
 	if [ -n "$(ISP_RMEM)" ]; then \
 		if [ "$(SOC_FAMILY)" = "t20" -o "$(SOC_FAMILY)" = "t10" ]; then \
@@ -577,6 +583,14 @@ define RMEM_SET_VALUE
 			grep -q "^osmem=$${osmem}M@0x0" $(OUTPUT_DIR)/uenv.txt || echo "osmem=$${osmem}M@0x0" >> $(OUTPUT_DIR)/uenv.txt && \
 			grep -q "^ispmem=$(ISP_ISPMEM)M@$$(printf '0x%x' $$ispmem_offset)" $(OUTPUT_DIR)/uenv.txt || echo "ispmem=$(ISP_ISPMEM)M@$$(printf '0x%x' $$ispmem_offset)" >> $(OUTPUT_DIR)/uenv.txt && \
 			grep -q "^rmem=$(ISP_RMEM)M@$$(printf '0x%x' $$rmem_offset)" $(OUTPUT_DIR)/uenv.txt || echo "rmem=$(ISP_RMEM)M@$$(printf '0x%x' $$rmem_offset)" >> $(OUTPUT_DIR)/uenv.txt; \
+		elif [ "$(SOC_FAMILY)" = "t40" -o "$(SOC_FAMILY)" = "t41" ]; then \
+			osmem=$$(( $(SOC_RAM) - $(ISP_RMEM) - $(ISP_NMEM) )) && \
+			rmem_offset=$$(( ($(SOC_RAM) - $(ISP_RMEM) - $(ISP_NMEM)) * 0x100000 )) && \
+			nmem_offset=$$(( ($(SOC_RAM) - $(ISP_NMEM)) * 0x100000 )) && \
+			grep -q "^osmem=$${osmem}M@0x0" $(OUTPUT_DIR)/uenv.txt || echo "osmem=$${osmem}M@0x0" >> $(OUTPUT_DIR)/uenv.txt && \
+			grep -q "^rmem=$(ISP_RMEM)M@$$(printf '0x%x' $$rmem_offset)" $(OUTPUT_DIR)/uenv.txt || echo "rmem=$(ISP_RMEM)M@$$(printf '0x%x' $$rmem_offset)" >> $(OUTPUT_DIR)/uenv.txt && \
+			grep -q "^nmem=$(ISP_NMEM)M@$$(printf '0x%x' $$nmem_offset)" $(OUTPUT_DIR)/uenv.txt || echo "nmem=$(ISP_NMEM)M@$$(printf '0x%x' $$nmem_offset)" >> $(OUTPUT_DIR)/uenv.txt; \
+			echo HELLO $(ISP_NMEM); \
 		else \
 			osmem=$$(( $(SOC_RAM) - $(ISP_RMEM) )) && \
 			rmem_offset=$$(( ($(SOC_RAM) - $(ISP_RMEM)) * 0x100000 )) && \
@@ -590,6 +604,9 @@ endef
 
 THINGINO_UBOOT_PRE_BUILD_HOOKS += RMEM_SET_VALUE
 
+#
+# Replace appropriate values in uenv.txt with those from the device config
+#
 define THINGINO_GENERATE_UBOOT_ENV
 	@env BR2_PACKAGE_THINGINO_UBOOT_ROOT='$(value BR2_PACKAGE_THINGINO_UBOOT_ROOT)' sh -c 'grep -q "^root=" $(OUTPUT_DIR)/uenv.txt || echo "root=$$BR2_PACKAGE_THINGINO_UBOOT_ROOT" | sed "s/=\"/=/;s/\"$$//" >> $(OUTPUT_DIR)/uenv.txt'
 	@env BR2_PACKAGE_THINGINO_UBOOT_ROOTFSTYPE='$(value BR2_PACKAGE_THINGINO_UBOOT_ROOTFSTYPE)' sh -c 'grep -q "^rootfstype=" $(OUTPUT_DIR)/uenv.txt || echo "rootfstype=$$BR2_PACKAGE_THINGINO_UBOOT_ROOTFSTYPE" | sed "s/=\"/=/;s/\"$$//" >> $(OUTPUT_DIR)/uenv.txt'

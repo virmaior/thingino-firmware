@@ -146,7 +146,11 @@ else ifeq ($(BR2_SOC_INGENIC_T31L),y)
 	SOC_RAM := 64
 	BR2_SOC_INGENIC_T31 := y
 	BR2_XBURST_1 := y
+	ifeq ($(BR2_THINGINO_FLASH_NAND),y)
+	UBOOT_BOARDNAME := "isvp_t31_sfcnand_lite"
+	else
 	UBOOT_BOARDNAME := "isvp_t31_sfcnor_lite"
+	endif
 else ifeq ($(BR2_SOC_INGENIC_T31LC),y)
 	SOC_FAMILY := t31
 	SOC_MODEL := t31lc
@@ -160,112 +164,211 @@ else ifeq ($(BR2_SOC_INGENIC_T31N),y)
 	SOC_RAM := 64
 	BR2_SOC_INGENIC_T31 := y
 	BR2_XBURST_1 := y
+	ifeq ($(BR2_THINGINO_FLASH_NAND),y)
+	UBOOT_BOARDNAME := "isvp_t31_sfcnand"
+	else
 	UBOOT_BOARDNAME := "isvp_t31_sfcnor"
+	endif
 else ifeq ($(BR2_SOC_INGENIC_T31X),y)
 	SOC_FAMILY := t31
 	SOC_MODEL := t31x
 	SOC_RAM := 128
 	BR2_SOC_INGENIC_T31 := y
 	BR2_XBURST_1 := y
+	ifeq ($(BR2_THINGINO_FLASH_NAND),y)
+	UBOOT_BOARDNAME := "isvp_t31_sfcnand_ddr128M"
+	else
 	UBOOT_BOARDNAME := "isvp_t31_sfcnor_ddr128M"
+	endif
 else ifeq ($(BR2_SOC_INGENIC_T31A),y)
 	SOC_FAMILY := t31
 	SOC_MODEL := t31a
 	SOC_RAM := 128
 	BR2_SOC_INGENIC_T31 := y
 	BR2_XBURST_1 := y
+	ifeq ($(BR2_THINGINO_FLASH_NAND),y)
+	UBOOT_BOARDNAME := "isvp_t31a_sfcnand_ddr128M"
+	else
 	UBOOT_BOARDNAME := "isvp_t31a_sfcnor_ddr128M"
+	endif
 else ifeq ($(BR2_SOC_INGENIC_T31AL),y)
 	SOC_FAMILY := t31
 	SOC_MODEL := t31al
 	SOC_RAM := 128
 	BR2_SOC_INGENIC_T31 := y
 	BR2_XBURST_1 := y
+	ifeq ($(BR2_THINGINO_FLASH_NAND),y)
+	UBOOT_BOARDNAME := "isvp_t31al_sfcnand_ddr128M"
+	else
 	UBOOT_BOARDNAME := "isvp_t31al_sfcnor_ddr128M"
+	endif
 else ifeq ($(BR2_SOC_INGENIC_T31ZL),y)
 	SOC_FAMILY := t31
 	SOC_MODEL := t31zl
 	SOC_RAM := 64
 	BR2_SOC_INGENIC_T31 := y
 	BR2_XBURST_1 := y
+	ifeq ($(BR2_THINGINO_FLASH_NAND),y)
+	UBOOT_BOARDNAME := "isvp_t31_sfcnand_lite"
+	else
 	UBOOT_BOARDNAME := "isvp_t31_sfcnor_lite"
+	endif
 else ifeq ($(BR2_SOC_INGENIC_T31ZX),y)
 	SOC_FAMILY := t31
 	SOC_MODEL := t31zx
 	SOC_RAM := 128
 	BR2_SOC_INGENIC_T31 := y
 	BR2_XBURST_1 := y
+	ifeq ($(BR2_THINGINO_FLASH_NAND),y)
+	UBOOT_BOARDNAME := "isvp_t31_sfcnand_ddr128M"
+	else
 	UBOOT_BOARDNAME := "isvp_t31_sfcnor_ddr128M"
+	endif
 else ifeq ($(BR2_SOC_INGENIC_T40N),y)
 	SOC_FAMILY := t40
 	SOC_MODEL := t40n
 	SOC_RAM := 128
 	BR2_SOC_INGENIC_T40 := y
 	BR2_XBURST_2 := y
+	ifeq ($(BR2_THINGINO_FLASH_NAND),y)
+	UBOOT_BOARDNAME := "isvp_t40n_sfcnand"
+	else
 	UBOOT_BOARDNAME := "isvp_t40n_sfcnor"
+	endif
 else ifeq ($(BR2_SOC_INGENIC_T40NN),y)
 	SOC_FAMILY := t40
 	SOC_MODEL := t40nn
 	SOC_RAM := 128
 	BR2_SOC_INGENIC_T40 := y
 	BR2_XBURST_2 := y
+	ifeq ($(BR2_THINGINO_FLASH_NAND),y)
+	UBOOT_BOARDNAME := "isvp_t40n_sfcnand"
+	else
 	UBOOT_BOARDNAME := "isvp_t40n_sfcnor"
+	endif
 else ifeq ($(BR2_SOC_INGENIC_T40XP),y)
 	SOC_FAMILY := t40
 	SOC_MODEL := t40xp
 	SOC_RAM := 256
 	BR2_SOC_INGENIC_T40 := y
 	BR2_XBURST_2 := y
+	ifeq ($(BR2_THINGINO_FLASH_NAND),y)
+	UBOOT_BOARDNAME := "isvp_t40xp_sfcnand"
+	else
 	UBOOT_BOARDNAME := "isvp_t40xp_sfcnor"
+	endif
 else ifeq ($(BR2_SOC_INGENIC_T40A),y)
 	SOC_FAMILY := t40
 	SOC_MODEL := t40a
 	SOC_RAM := 128
 	BR2_SOC_INGENIC_T40 := y
 	BR2_XBURST_2 := y
+	ifeq ($(BR2_THINGINO_FLASH_NAND),y)
+	UBOOT_BOARDNAME := "isvp_t40a_sfcnand"
+	else
 	UBOOT_BOARDNAME := "isvp_t40a_sfcnor"
+	endif
 else ifeq ($(BR2_SOC_INGENIC_T41LQ),y)
 	SOC_FAMILY := t41
 	SOC_MODEL := t41lq
 	SOC_RAM := 64
 	BR2_SOC_INGENIC_T41 := y
 	BR2_XBURST_2 := y
-	UBOOT_BOARDNAME := "isvp_t41_sfcnor"
+	ifeq ($(BR2_THINGINO_FLASH_NAND),y)
+	UBOOT_BOARDNAME := "isvp_t41lq_sfc0_nand"
+	else
+	UBOOT_BOARDNAME := "isvp_t41lq_sfc_nor"
+	endif
 else ifeq ($(BR2_SOC_INGENIC_T41NQ),y)
 	SOC_FAMILY := t41
 	SOC_MODEL := t41nq
 	SOC_RAM := 128
 	BR2_SOC_INGENIC_T41 := y
 	BR2_XBURST_2 := y
+	ifeq ($(BR2_THINGINO_FLASH_NAND),y)
+	UBOOT_BOARDNAME := "isvp_t41nq_sfc0_nand"
+	else
 	UBOOT_BOARDNAME := "isvp_t41nq_sfc_nor"
+	endif
 else ifeq ($(BR2_SOC_INGENIC_T41ZL),y)
 	SOC_FAMILY := t41
 	SOC_MODEL := t41zl
 	SOC_RAM := 64
 	BR2_SOC_INGENIC_T41 := y
 	BR2_XBURST_2 := y
-	UBOOT_BOARDNAME := "isvp_t41_sfcnor"
+	ifeq ($(BR2_THINGINO_FLASH_NAND),y)
+	UBOOT_BOARDNAME := "isvp_t41l_sfc0_nand"
+	else
+	UBOOT_BOARDNAME := "isvp_t41l_sfc_nor"
+	endif
 else ifeq ($(BR2_SOC_INGENIC_T41ZN),y)
 	SOC_FAMILY := t41
 	SOC_MODEL := t41zn
 	SOC_RAM := 128
 	BR2_SOC_INGENIC_T41 := y
 	BR2_XBURST_2 := y
-	UBOOT_BOARDNAME := "isvp_t41_sfcnor"
+	ifeq ($(BR2_THINGINO_FLASH_NAND),y)
+	UBOOT_BOARDNAME := "isvp_t41n_sfc0_nand"
+	else
+	UBOOT_BOARDNAME := "isvp_t41n_sfc_nor"
+	endif
 else ifeq ($(BR2_SOC_INGENIC_T41ZX),y)
 	SOC_FAMILY := t41
 	SOC_MODEL := t41zx
 	SOC_RAM := 256
 	BR2_SOC_INGENIC_T41 := y
 	BR2_XBURST_2 := y
-	UBOOT_BOARDNAME := "isvp_t41_sfcnor"
+	ifeq ($(BR2_THINGINO_FLASH_NAND),y)
+	UBOOT_BOARDNAME := "isvp_t41zx_sfc0_nand"
+	else
+	UBOOT_BOARDNAME := "isvp_t41zx_sfc_nor"
+	endif
 else ifeq ($(BR2_SOC_INGENIC_T41A),y)
 	SOC_FAMILY := t41
 	SOC_MODEL := t41a
 	SOC_RAM := 512
 	BR2_SOC_INGENIC_T41 := y
 	BR2_XBURST_2 := y
-	UBOOT_BOARDNAME := "isvp_t41_sfcnor"
+	ifeq ($(BR2_THINGINO_FLASH_NAND),y)
+	UBOOT_BOARDNAME := "isvp_t41a_sfc0_nand"
+	else
+	UBOOT_BOARDNAME := "isvp_t41a_sfc_nor"
+	endif
+else ifeq ($(BR2_SOC_INGENIC_A1N),y)
+	SOC_FAMILY := a1
+	SOC_MODEL := a1n
+	SOC_RAM := 256
+	BR2_SOC_INGENIC_A1 := y
+	BR2_XBURST_2 := y
+	UBOOT_BOARDNAME := "isvp_a1_n_lzma_sfc0nor"
+else ifeq ($(BR2_SOC_INGENIC_A1NT),y)
+	SOC_FAMILY := a1
+	SOC_MODEL := a1nt
+	SOC_RAM := 256
+	BR2_SOC_INGENIC_A1 := y
+	BR2_XBURST_2 := y
+	UBOOT_BOARDNAME := "isvp_a1_nt_lzma_sfc0nor"
+else ifeq ($(BR2_SOC_INGENIC_A1X),y)
+	SOC_FAMILY := a1
+	SOC_MODEL := a1x
+	SOC_RAM := 256
+	BR2_SOC_INGENIC_A1 := y
+	BR2_XBURST_2 := y
+	UBOOT_BOARDNAME := "isvp_a1_x_lzma_sfc0nor"
+else ifeq ($(BR2_SOC_INGENIC_A1L),y)
+	SOC_FAMILY := a1
+	SOC_MODEL := a1l
+	SOC_RAM := 128
+	BR2_SOC_INGENIC_A1 := y
+	BR2_XBURST_2 := y
+	UBOOT_BOARDNAME := "isvp_a1_l_lzma_sfc0nor"
+else ifeq ($(BR2_SOC_INGENIC_A1A),y)
+	SOC_FAMILY := a1
+	SOC_MODEL := a1a
+	SOC_RAM := 512
+	BR2_SOC_INGENIC_A1 := y
+	BR2_XBURST_2 := y
+	UBOOT_BOARDNAME := "isvp_a1_a_lzma_sfc0nor"
 endif
 
 SOC_FAMILY_CAPS := $(shell echo $(SOC_FAMILY) | tr a-z A-Z)
@@ -279,6 +382,7 @@ else
 	INGENIC_ARCH := xburst1
 endif
 
+export BR2_SOC_INGENIC_A1
 export BR2_SOC_INGENIC_T10
 export BR2_SOC_INGENIC_T20
 export BR2_SOC_INGENIC_T21
@@ -304,7 +408,7 @@ export SOC_RAM
 ifneq ($(KERNEL_VERSION_3)$(KERNEL_VERSION_4),y)
 	ifeq ($(BR2_SOC_INGENIC_T41),y)
 		KERNEL_VERSION_4 := y
-	else ifeq ($(BR2_SOC_INGENIC_T40),y)
+	else ifeq ($(BR2_SOC_INGENIC_T40)$(BR2_SOC_INGENIC_A1),y)
 		KERNEL_VERSION_4 := y
 	else
 		KERNEL_VERSION_3 := y
@@ -325,6 +429,10 @@ else ifeq ($(BR2_SOC_INGENIC_T40),y)
 	KERNEL_VERSION := 4.4
 	KERNEL_SITE := https://github.com/gtxaspec/thingino-linux
 	KERNEL_BRANCH := ingenic-t40
+else ifeq ($(BR2_SOC_INGENIC_A1),y)
+	KERNEL_VERSION := 4.4
+	KERNEL_SITE := https://github.com/gtxaspec/thingino-linux
+	KERNEL_BRANCH := ingenic-a1
 else ifeq ($(BR2_SOC_INGENIC_T31),y)
 	ifeq ($(KERNEL_VERSION_3),y)
 		KERNEL_VERSION := 3.10
@@ -620,11 +728,16 @@ FOUND_RMEM := $(subst BR2_THINGINO_RMEM_,,$(strip \
 
 # Set the default RMEM size based on SOC ram size if no explicit value found
 # These values match the default values found in uboot by the soc ram size
+# Default values should match what's in Config.soc.in since we can't use the BR2 variables directly
 ifeq ($(FOUND_RMEM),)
 	ifeq ($(SOC_RAM),64)
 		ISP_RMEM := 23
 	else ifeq ($(SOC_RAM),128)
 		ISP_RMEM := 29
+	else ifeq ($(SOC_RAM),256)
+		ISP_RMEM := 64
+	else
+		ISP_RMEM := 32
 	endif
 else
 	ISP_RMEM := $(FOUND_RMEM)
@@ -645,12 +758,24 @@ endif
 
 export ISP_ISPMEM
 
-ISP_NMEM := $(or \
-	$(subst BR2_NMEM_,,$(strip \
-		$(foreach v,$(filter BR2_NMEM_%,$(filter-out BR2_NMEM_CHOICE,$(.VARIABLES))), \
-			$(if $(filter y,$($(v))),$(v)) \
-		) \
-	)),32)
+FOUND_NMEM := $(subst BR2_THINGINO_NMEM_,,$(strip \
+	$(foreach v,$(filter BR2_THINGINO_NMEM_%,$(filter-out BR2_THINGINO_NMEM_CHOICE,$(.VARIABLES))), \
+		$(if $(filter y,$($(v))),$(v)) \
+	)))
+
+ifeq ($(FOUND_NMEM),)
+	ifeq ($(SOC_RAM),64)
+		ISP_NMEM := 23
+	else ifeq ($(SOC_RAM),128)
+		ISP_NMEM := 29
+	else ifeq ($(SOC_RAM),256)
+		ISP_NMEM := 64
+	else
+		ISP_NMEM := 16
+	endif
+else
+	ISP_NMEM := $(FOUND_NMEM)
+endif
 
 export ISP_NMEM
 
@@ -883,6 +1008,8 @@ else ifeq ($(BR2_SOC_INGENIC_T40),y)
 	SDK_VERSION := 1.2.0
 else ifeq ($(BR2_SOC_INGENIC_T41),y)
 	SDK_VERSION := 1.2.0
+else ifeq ($(BR2_SOC_INGENIC_A1),y)
+	SDK_VERSION := 1.6.2
 endif
 
 # Determine project C library, set SDK C library and toolchain version
@@ -911,7 +1038,7 @@ else ifeq ($(BR2_SOC_INGENIC_T31),y)
 	else
 		SDK_LIBC_VERSION := 5.4.0
 	endif
-else ifeq ($(BR2_SOC_INGENIC_T40)$(BR2_SOC_INGENIC_T41),y)
+else ifeq ($(BR2_SOC_INGENIC_T40)$(BR2_SOC_INGENIC_T41)$(BR2_SOC_INGENIC_A1),y)
 	SDK_LIBC_VERSION := 7.2.0
 else
 	SDK_LIBC_VERSION := 5.4.0
