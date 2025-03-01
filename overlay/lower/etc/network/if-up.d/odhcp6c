@@ -1,7 +1,6 @@
 #!/bin/sh
 
 PIDFILE="/var/run/odhcp6c_$IFACE.pid"
-TIMEOUT=10
 
 . /usr/share/common
 
@@ -27,21 +26,7 @@ start_post_up() {
 
 	TMP_LOG="/tmp/odhcp6c.log"
 
-	/sbin/odhcp6c -p "$PIDFILE" -t120 -S15 "$IFACE" > "$TMP_LOG" 2>&1 &
-
-	while [ "$TIMEOUT" -gt 0 ]; do
-		if [ -f "$TMP_LOG" ] && grep -q "Adding address" "$TMP_LOG"; then
-			echo "$IFACE: DHCPv6 configured"
-			rm -f "$TMP_LOG"
-			return 0
-		fi
-		sleep 1
-		TIMEOUT=$((TIMEOUT - 1))
-	done
-
-	echo "$IFACE: DHCPv6 timeout reached"
-	rm -f "$TMP_LOG"
-	return 1
+	/sbin/odhcp6c -d -v -p "$PIDFILE" -t120 "$IFACE"
 }
 
 stop_pre_down() {
