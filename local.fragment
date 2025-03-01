@@ -1,1 +1,4 @@
 # place your custom settings for local build here
+
+BR2_PACKAGE_USBNET=y
+BR2_PACKAGE_USBNET_USB_DIRECT_NCM=y
