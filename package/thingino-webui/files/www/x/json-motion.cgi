@@ -1,8 +1,6 @@
 #!/bin/sh
 . ./_json.sh
 
-CONFIG_FILE="/etc/web.conf"
-
 # parse parameters from query string
 [ -n "$QUERY_STRING" ] && eval $(echo "$QUERY_STRING" | sed "s/&/;/g")
 
@@ -25,5 +23,5 @@ case "$target" in
 		;;
 esac
 
-/etc/init.d/S95prudynt restart >/dev/null
-/etc/init.d/S96vbuffer restart >/dev/null
+service restart prudynt >/dev/null
+service restart vbuffer >/dev/null

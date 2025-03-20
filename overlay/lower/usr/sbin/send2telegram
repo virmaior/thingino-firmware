@@ -5,14 +5,15 @@
 show_help() {
 	echo "Usage: $0 [options] [clip|motion|snap]
 Where:
-	-c channel  Telegram channel ID. See https://gist.github.com/mraaroncruz/e76d19f7d61d59419002db54030ebe35
+	-c channel  Telegram channel ID.
+	            See https://gist.github.com/mraaroncruz/e76d19f7d61d59419002db54030ebe35
 	-f file     Send file.
 	-m message  Send message.
 	-s          Disable notification.
 	-t token    Telegram bot token. See https://t.me/botfather if you need one.
 	-v          Verbose output.
 	-h          Show this help.
-"
+" >&2
 	exit 0
 }
 
@@ -54,14 +55,21 @@ parse_caption() {
 }
 
 copy_photo() {
-	[ -f "$SNAPSHOT_FILE" ] || die "Snapshot not found"
+	if [ ! -f "$SNAPSHOT_FILE" ]; then
+		echo_error "Snapshot not found"
+		exit 1
+	fi
 	photo2=$(mktemp -u).jpg
 	cp -f "$SNAPSHOT_FILE" "$photo2"
 	garbage="$garbage $photo2"
 }
 
 copy_video() {
-	[ -f "$VBUFFER_FILE" ] || die "Video buffer not found"
+	if [ ! -f "$VBUFFER_FILE" ]; then
+		echo_error "Video buffer not found"
+		exit 1
+	fi
+
 	local ext=${VBUFFER_FILE##*.}
 	video2=$(mktemp -u).$ext
 	cp -f "$VBUFFER_FILE" "$video2"
@@ -74,20 +82,34 @@ remove_tempfiles() {
 	done
 }
 
-[ -z "$telegram_token" ] && die "Telegram token not found"
-[ -z "$telegram_channel" ] && die "Telegram channel not found"
+if [ -z "$telegram_token" ]; then
+	echo_error "Telegram token not found"
+	exit 1
+fi
 
-command="curl --show-error --fail --connect-timeout 10 --max-time 30 --retry 3 $verbosity"
-command="$command -H 'Content-Type: multipart/form-data' -F 'chat_id=$telegram_channel'"
-[ "true" = "$telegram_silent" ] && command="$command -F 'disable_notification=true'"
+if [ -z "$telegram_channel" ]; then
+	echo_error "Telegram channel not found"
+	exit 1
+fi
+
+command="$CURL $verbosity -H 'Content-Type: multipart/form-data' -F 'chat_id=$telegram_channel'"
+
+if [ "true" = "$telegram_silent" ]; then
+	command="$command -F 'disable_notification=true'"
+fi
+
 command="$command --url https://api.telegram.org/bot$telegram_token/"
+
 # no further modifications to command after this point
+
 if [ "true" = "$telegram_attach_video" ] && [ "true" = "$telegram_attach_photo" ]; then
 	# https://core.telegram.org/bots/api#sendmediagroup
 	copy_photo
 	caption=$(parse_caption $photo2)
 	command="${command}sendMediaGroup -F 'snap=@$photo2'"
-	[ -n "$telegram_message" ] && caption="$caption - $telegram_message"
+	if [ -n "$telegram_message" ]; then
+		caption="$caption - $telegram_message"
+	fi
 	media='[{"type":"photo","media":"attach://snap","caption":"'$caption'"},'
 	inode=$(stat -c%i $VBUFFER_FILE)
 	copy_video
@@ -95,7 +117,10 @@ if [ "true" = "$telegram_attach_video" ] && [ "true" = "$telegram_attach_photo" 
 	media=$media'{"type":"video","media":"attach://video1"},'
 	while [ $inode -eq $(stat -c%i $VBUFFER_FILE) ]; do
 		n=$((n + 1))
-		[ "$n" -le 10 ] || die "Give up after $n attempts."
+		if [ "$n" -ge 10 ]; then
+			echo_error "Give up after $n attempts."
+			exit 1
+		fi
 		sleep 1
 	done
 	copy_video
@@ -105,28 +130,38 @@ if [ "true" = "$telegram_attach_video" ] && [ "true" = "$telegram_attach_photo" 
 elif [ "true" = "$telegram_attach_video" ]; then
 	# https://core.telegram.org/bots/api#sendvideo
 	copy_video
-	caption=$(parse_caption $video2)
-	[ -n "$telegram_message" ] && caption="$caption - $telegram_message"
+	caption="$(parse_caption $video2)"
+	if [ -n "$telegram_message" ]; then
+		caption="$caption - $telegram_message"
+	fi
 	command="${command}sendVideo -F 'video=@$video2' -F 'caption=$caption'"
 elif [ "true" = "$telegram_attach_photo" ]; then
 	# https://core.telegram.org/bots/api#sendphoto
 	copy_photo
-	caption=$(parse_caption $photo2)
-	[ -n "$telegram_message" ] && caption="$caption - $telegram_message"
+	caption="$(parse_caption $photo2)"
+	if [ -n "$telegram_message" ]; then
+		caption="$caption - $telegram_message"
+	fi
 	command="${command}sendPhoto -F 'photo=@$photo2' -F 'caption=$caption'"
 elif [ -n "$telegram_message" ]; then
 	# https://core.telegram.org/bots/api#sendmessage
 	command="${command}sendMessage -F 'text=$telegram_message'"
 elif [ -n "$telegram_file" ] && [ -f "$telegram_file" ]; then
 	# https://core.telegram.org/bots/api#senddocument
-	caption=$(parse_caption $telegram_file)
-	[ -n "$telegram_message" ] && caption="$caption - $telegram_message"
+	caption="$(parse_caption $telegram_file)"
+	if [ -n "$telegram_message" ]; then
+		caption="$caption - $telegram_message"
+	fi
 	command="${command}sendDocument -F 'document=@$1' -F 'caption=$caption'"
 else
-	die "Nothing to send"
+	echo_error "Nothing to send"
+	exit 1
 fi
 
-sh -c "$command" || die "Failed to send message to Telegram"
+if ! sh -c "$command"; then
+	echo_error "Failed to send message to Telegram"
+	exit 1
+fi
 
 remove_tempfiles
 

@@ -1,9 +1,11 @@
 #!/bin/sh
 
+. /usr/share/common
+
 MDEV="/sbin/mdev"
 
 start() {
-	echo "Configuring mdev..."
+	echo_title "Configuring mdev"
 
 	echo "$MDEV" > /proc/sys/kernel/hotplug
 	$MDEV -s
@@ -16,8 +18,11 @@ case "$1" in
 	stop)
 		true
 		;;
+	restart)
+		start
+		;;
 	*)
-		echo "Usage: $0 {start|stop}"
+		echo "Usage: $0 {start|stop|restart}"
 		exit 1
 		;;
 esac

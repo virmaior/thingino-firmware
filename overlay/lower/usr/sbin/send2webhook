@@ -10,7 +10,7 @@ Where:
 	-u url      Webhook URL.
 	-v          Verbose output.
 	-h          Show this help.
-"
+" >&2
 	exit 0
 }
 
@@ -25,7 +25,10 @@ while getopts m:su:vh flag; do
 	esac
 done
 
-[ -z "$webhook_url" ] && die "Webhook URL not found"
+if [ -z "$webhook_url" ]; then
+	echo_error "Webhook URL not found"
+	exit 1
+fi
 
 if [ "true" = "$webhook_attach_snapshot" ]; then
 	attachment=$(mktemp -u).jpg
@@ -35,10 +38,11 @@ else
 	data="-d '$webhook_message'"
 fi
 
-command="curl --show-error --fail --connect-timeout 10 --max-time 30 --retry 3 $verbosity"
-command="$command $data --url $webhook_url"
-
-sh -c "$command" || die "Failed to send webhook message"
+command="$CURL $verbosity $data --url $webhook_url"
+if ! sh -c "$command"; then
+	echo_error "Failed to send webhook message"
+	exit 1
+fi
 
 [ -f "$attachment" ] && rm "$attachment"
 

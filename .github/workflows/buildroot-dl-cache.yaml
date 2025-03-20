@@ -123,7 +123,7 @@ jobs:
 
       - name: Download buildroot sources
         run: |
-          BOARD=${{ matrix.caches-version }} make source
+          BOARD=${{ matrix.caches-version }} make source WORKFLOW=1
           TIME=$(date -d @${SECONDS} +%M:%S)
           echo "TIME=${TIME}" >> ${GITHUB_ENV}
 

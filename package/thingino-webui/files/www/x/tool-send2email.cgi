@@ -46,8 +46,10 @@ email_smtp_username=\"$email_smtp_username\"
 email_smtp_password=\"$email_smtp_password\"
 email_smtp_use_ssl=\"$email_smtp_use_ssl\"
 "
+		redirect_to $SCRIPT_NAME "success" "Data updated."
+	else
+		redirect_to $SCRIPT_NAME "danger" "Error: $error"
 	fi
-	redirect_to $SCRIPT_NAME
 fi
 
 defaults
@@ -67,7 +69,7 @@ defaults
 <% field_switch "email_insecure_ssl" "Ignore SSL certificate validity" %>
 </div>
 <div class="col">
-<% field_text "email_from_name" "Sender's name" %>
+<% field_text "email_from_name" "Sender's name" "Use a real email address where bounce reports can be sent to." %>
 <% field_text "email_from_address" "Sender's address" %>
 <% field_text "email_to_name" "Recipient's name" %>
 <% field_text "email_to_address" "Recipient's address" %>
@@ -82,8 +84,6 @@ defaults
 </div>
 <% button_submit %>
 </form>
-
-<p>Use a real email address where bounce reports can be sent to.</p>
 
 <div class="alert alert-dark ui-debug d-none">
 <h4 class="mb-3">Debug info</h4>

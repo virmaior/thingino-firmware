@@ -5,9 +5,16 @@ ifeq ($(__BASH_MAKE_COMPLETION__),1)
 	exit
 endif
 
-# Run dependency check before doing anything
-_dep_check := $(shell $(CURDIR)/scripts/dep_check.sh)
-$(info $(_dep_check))
+# Run dependency check before doing anything, but skip if WORKFLOW=1
+ifeq ($(WORKFLOW),)
+  _dep_check := $(shell $(CURDIR)/scripts/dep_check.sh>&2; echo $$?)
+  ifneq ($(lastword $(_dep_check)),0)
+    $(error Dependency check failed)
+  endif
+else
+   $(info Skipping dependency check for workflow)
+  _dep_check := 0
+endif
 
 # Camera IP address
 # shortened to just IP for convenience of running from command line
@@ -59,6 +66,8 @@ include $(BR2_EXTERNAL)/board.mk
 
 # include thingino makefile
 include $(BR2_EXTERNAL)/thingino.mk
+
+export CAMERA
 
 # hardcoded variables
 WGET := wget --quiet --no-verbose --retry-connrefused --continue --timeout=5

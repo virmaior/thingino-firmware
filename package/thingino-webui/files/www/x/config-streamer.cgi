@@ -1,10 +1,10 @@
 #!/bin/haserl --upload-limit=1024 --upload-dir=/tmp
 <%in _common.cgi %>
 <%
-page_title="Streamer"
+page_title="Streamer/OSD"
 
 if [ "restart" = "$GET_do" ]; then
-	/etc/init.d/S95prudynt restart >/dev/null
+	service restart prudynt >/dev/null
 	sleep 3
 	redirect_to $SCRIPT_NAME
 fi
@@ -46,8 +46,6 @@ esac
 
 prudynt_config=/etc/prudynt.cfg
 onvif_config=/etc/onvif.conf
-onvif_discovery=/etc/init.d/S96onvif_discovery
-onvif_notify=/etc/init.d/S97onvif_notify
 
 rtsp_username=$(awk -F: '/Streaming Service/{print $1}' /etc/passwd)
 default_for rtsp_username $(awk -F'"' '/username/{print $2}' $prudynt_config)

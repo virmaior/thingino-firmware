@@ -2,15 +2,8 @@
 
 . /usr/share/common
 
-create_directory_for() {
-	dir="$(dirname "$1")"
-	[ -d "$dir" ] || mkdir -p "$dir"
-	[ -d "$dir" ] || die "Cannot create directory $dir"
-	[ -w "$dir" ] || die "Cannot write to $dir"
-}
-
 hesitate() {
-	echo "$1" >&2
+	echo_warning "$1"
 	sleep 5
 	exit 0
 }
@@ -19,31 +12,44 @@ hesitate() {
 timelapse_mount=${timelapse_mount%/}
 timelapse_device_path=${timelapse_device_path%/}
 
-[ -z "$timelapse_mount" ] && die "'timelapse_mount' is not set"
+if [ -z "$timelapse_mount" ]; then
+	echo_error "'timelapse_mount' is not set"
+	exit 1
+fi
 
 # wait for mount point
-mountpoint -q "$timelapse_mount" || hesitate "$timelapse_mount is not mounted"
-[ -w "$timelapse_mount" ] || hesitate "$timelapse_mount is not writable"
+if ! mountpoint -q "$timelapse_mount" >/dev/null; then
+	hesitate "$timelapse_mount is not mounted"
+fi
+
+if [ ! -w "$timelapse_mount" ]; then
+	hesitate "$timelapse_mount is not writable"
+fi
 
 # storage directory
 timelapse_storage="$timelapse_mount/$timelapse_device_path"
-if [ ! -d "$timelapse_storage" ]; then
-	echo "Creating $timelapse_storage" >&2
-	mkdir -vp "$timelapse_storage" || die "Cannot create directory $timelapse_storage"
-fi
-[ -w "$timelapse_storage" ] || die "Cannot write to $timelapse_storage"
+ensure_dir "$timelapse_storage"
 
-[ -z "$timelapse_depth" ] && timelapse_depth=7
-[ -z "$timelapse_filename" ] && timelapse_filename="%Y/%m/%d/%H%M.jpg"
-[ -z "$timelapse_interval" ] && timelapse_interval=1
+if [ -z "$timelapse_depth" ]; then
+	timelapse_depth=7
+fi
+
+if [ -z "$timelapse_filename" ]; then
+	timelapse_filename="%Y/%m/%d/%H%M.jpg"
+fi
+
+if [ -z "$timelapse_interval" ]; then
+	timelapse_interval=1
+fi
 
 # delete older files
-find "$timelapse_storage" -type f -name '*.jpg' -mtime +$timelapse_depth -exec rm {} \;
+find "$timelapse_storage" -type f -name '*.jpg' -mtime +$timelapse_depth -delete
 
 # delete empty directories
-find "$timelapse_storage" -empty -type d -mindepth 1 -exec rm -r {} \;
+find "$timelapse_storage" -mindepth 1 -type d -empty -delete
 
-create_directory_for "$timelapse_storage/$(date +"$timelapse_filename")"
-cp -f "$SNAPSHOT_FILE" "$timelapse_storage/$(date +"$timelapse_filename")"
+target="$timelapse_storage/$(date +"$timelapse_filename")"
+ensure_dir "$(dirname "$target")"
+cp -f "$SNAPSHOT_FILE" "$target"
 
 exit 0

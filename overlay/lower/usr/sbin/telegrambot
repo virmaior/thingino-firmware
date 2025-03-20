@@ -2,12 +2,14 @@
 
 . /usr/share/common
 
-pidof -o %PPID $(basename $0) > /dev/null && die "is already running"
-
+singleton "$0"
 
 ensure_command "jsonfilter"
 
-[ -z "$telegrambot_token" ] && die "Telegram Bot token is not set"
+if [ -z "$telegrambot_token" ]; then
+	echo_error "Telegram Bot token is not set"
+	exit 1
+fi
 
 API_URL="https://api.telegram.org/bot$telegrambot_token"
 MSG_TIMEOUT=5
@@ -19,9 +21,13 @@ IFS_ORIG=$IFS
 bot_keyboard=""
 bot_commands=""
 
-[ "-v" = "$1" ] && verbosity="--verbose" || verbosity="--silent"
+if [ "-v" = "$1" ]; then
+	verbosity="--verbose"
+else
+	verbosity="--silent"
+fi
 
-### Common methods
+# Common methods
 build_menu() {
 	bot_commands="["
 	bot_keyboard="{\"keyboard\":[["
@@ -41,47 +47,51 @@ build_menu() {
 }
 
 save_offset() {
-	[ -f $OFFSET_TEMP ] && cp $OFFSET_TEMP $OFFSET_STOR && sync
+	if [ -f $OFFSET_TEMP ]; then
+		cp $OFFSET_TEMP $OFFSET_STOR
+		sync
+	fi
 }
 
 restore_offset() {
-	[ -f $OFFSET_STOR ] && cp $OFFSET_STOR $OFFSET_TEMP
+	if [ -f $OFFSET_STOR ]; then
+		cp $OFFSET_STOR $OFFSET_TEMP
+	fi
 }
 
 json_data() {
 	jsonfilter -i $JSDATA_FILE -e "$1"
 }
 
-#### Telegram API
+# Telegram API
 
 api_call() {
-	[ -f $JSDATA_FILE ] && rm $JSDATA_FILE
-	echo_c 11 "$1"
+	if [ -f $JSDATA_FILE ]; then
+		rm $JSDATA_FILE
+	fi
+
 	local tmpfile=$(mktemp -u)
 	echo "$2" > $tmpfile
-	echo_c 14 "$(cat $tmpfile)"
 	curl $verbosity --show-error --fail \
 		--connect-timeout 10 --max-time 30 --retry 3 \
 		--url "$API_URL/$1" -H "Content-Type: application/json" \
 		--data-binary "@$tmpfile" \
 		--output $JSDATA_FILE
 	rm $tmpfile
-	echo_c 13 "$(cat $JSDATA_FILE)"
 }
 
-### Bot actions
+# Bot actions
 
 get_me() {
 	api_call "getMe" "{\"timeout\":$MSG_TIMEOUT}"
 	ME="@$(json_data "$.result.username")"
-	echo_c 33 "Starting Telegram Bot $ME"
 }
 
 leave_chat() {
 	api_call "leaveChat" "{\"chat_id\":\"$1\"}"
 }
 
-### Commands menu
+# Commands menu
 
 get_my_commands() {
 	api_call "getMyCommands"
@@ -100,8 +110,12 @@ set_chat_menu_button() {
 }
 
 show_menu() {
-	local data="{\"chat_id\":\"$1\",\"text\":\"Here you go\""
-	[ -n "$2" ] && data="$data,\"reply_to_message_id\":\"$2\""
+	local data
+
+	data="{\"chat_id\":\"$1\",\"text\":\"Here you go\""
+	if [ -n "$2" ]; then
+		data="$data,\"reply_to_message_id\":\"$2\""
+	fi
 	case "$chat_type" in
 		channel | group | private | supergroup)
 			data="$data,\"reply_markup\":$bot_keyboard" ;;
@@ -110,7 +124,7 @@ show_menu() {
 	api_call "sendMessage" "$data"
 }
 
-### Updates
+# Updates
 
 get_updates() {
 	# Available types of update:
@@ -145,7 +159,7 @@ tgb_readfromapi() {
 	jsonfilter -s "$updates" -e "$.result[@.update_id=$update_id].message.chat.id"
 }
 
-### Logics
+# Logics
 
 build_menu
 restore_offset
@@ -161,10 +175,14 @@ while :; do
 	sleep $((MSG_TIMEOUT / 2))
 
 	get_updates
-	[ "true" = "$(json_data "$.ok")" ] || continue
+	if [ "true" != "$(json_data "$.ok")" ]; then
+		continue
+	fi
 
 	update_ids=$(json_data "$.result[*].update_id")
-	[ -z "$update_ids" ] && continue
+	if [ -z "$update_ids" ]; then
+		continue
+	fi
 
 	for update_id in $update_ids; do
 		bot_command=""
@@ -179,11 +197,13 @@ while :; do
 		next_id=$((update_id + 1))
 		echo $next_id > $OFFSET_TEMP
 
-		[ -z "$(json_data "$.result[@.update_id=$update_id].*.entities")" ] && continue
+		if [ -z "$(json_data "$.result[@.update_id=$update_id].*.entities")" ]; then
+			continue
+		fi
+
 		entities=$(json_data "$.result[@.update_id=$update_id].*.entities[*]")
 
 		IFS=$'\n'
-
 		for entity in $entities; do
 			sender=$(json_data "$.result[@.update_id=$update_id].*.from.username")
 			chat_id=$(json_data "$.result[@.update_id=$update_id].*.chat.id")
@@ -212,7 +232,7 @@ while :; do
 
 			# check sender against whitelist
 			if ! echo "$telegrambot_users" | grep -qw "$sender"; then
-				echo "You are not my daddy, @$sender!"
+				echo_warning "You are not my daddy, @$sender!"
 				continue
 			fi
 
@@ -221,11 +241,8 @@ while :; do
 
 				# split command by '@' to $command and $mention
 				mention=${bot_command##*@}
-				if [ "$bot_command" = "$mention" ]; then
-					echo "Command $bot_command is global"
-				else
+				if [ "$bot_command" != "$mention" ]; then
 					if [ -n "$mention" ] && [ "$ME" != "@$mention" ]; then
-						echo "Command $bot_command is not for $ME but for $mention"
 						unset bot_command
 					else
 						bot_command=${bot_command%%@*}
@@ -241,10 +258,14 @@ while :; do
 				[ "/$(eval echo \$telegrambot_command_$i)" = "$bot_command" ] || continue
 				script="$(eval echo \$telegrambot_script_$i | sed "s/\$chat_id/$chat_id/")"
 				message=$(eval $script)
-				[ $? -eq 0 ] || message="Execution failed! Please review the command:\n$script\n\nOutput:\n$result"
+				if [ $? -ne 0 ]; then
+					message="Execution failed! Please review the command:\n$script\n\nOutput:\n$result"
+				fi
 				break
 			done
-			[ -n "$message" ] && send_message "$chat_id" "${message//\"/\\\"}" "$message_id"
+			if [ -n "$message" ]; then
+				send_message "$chat_id" "${message//\"/\\\"}" "$message_id"
+			fi
 		fi
 	done
 done

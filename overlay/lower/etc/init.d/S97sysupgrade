@@ -3,20 +3,20 @@
 . /usr/share/common
 
 start() {
-	echo "Checking sysupgrade..."
+	echo_title "Checking sysupgrade"
 
 	if [ "true" != "$sysupgrade_complete" ]; then
-		echo "- Mark sysupgradec complete"
+		echo_info "Mark sysupgrade complete"
 		fw_setenv sysupgrade_complete true
 		# play_sound thingino.pcm
 	fi
 }
 
 stop() {
-	echo "Checking for upgrade..."
+	echo_title "Checking for upgrade"
 
 	if [ -f "/tmp/upgrade.me" ]; then
-		echo "- Running sysupgrade..."
+		echo_warning "Running sysupgrade"
 		sysupgrade -p
 	fi
 }
@@ -28,8 +28,12 @@ case "$1" in
 	stop)
 		stop
 		;;
+	restart)
+		stop
+		start
+		;;
 	*)
-		echo "Usage: $0 {start|stop}"
+		echo "Usage: $0 {start|stop|restart}"
 		exit 1
 		;;
 esac

@@ -93,8 +93,10 @@ motor_speed=\"$motor_speed\"
 motor_speed_h=\"$motor_speed_h\"
 motor_speed_v=\"$motor_speed_v\"
 "
+		redirect_to $SCRIPT_NAME "success" "Data updated."
+	else
+		redirect_to $SCRIPT_NAME "danger" "Error: $error"
 	fi
-	redirect_to $SCRIPT_NAME
 fi
 
 defaults
@@ -149,9 +151,6 @@ defaults
 <h4 class="mb-3">Debug info</h4>
 <% ex "grep ^gpio_motor_ $CONFIG_FILE" %>
 <% ex "grep ^motor_ $CONFIG_FILE" %>
-<pre>
-motor_disable_homing: <%= $motor_disable_homing %>
-</pre>
 </div>
 
 <script>

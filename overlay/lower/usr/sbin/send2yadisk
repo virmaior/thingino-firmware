@@ -11,7 +11,7 @@ Where:
 	-P password Yandex Disk username.
 	-v          Verbose output.
 	-h          Show this help.
-"
+" >&2
 	exit 0
 }
 
@@ -27,8 +27,15 @@ while getopts d:f:P:u:vh flag; do
 	esac
 done
 
-[ -z "$yadisk_username" ] && die "Yandex Disk username not found"
-[ -z "$yadisk_password" ] && die "Yandex Disk password not found"
+if [ -z "$yadisk_username" ]; then
+	echo_error "Yandex Disk username not found"
+	exit 1
+fi
+
+if [ -z "$yadisk_password" ]; then
+	echo_error "Yandex Disk password not found"
+	exit 1
+fi
 
 if [ -z "$yadisk_file" ]; then
 	attachment=$(mktemp -u).jpg
@@ -36,8 +43,7 @@ if [ -z "$yadisk_file" ]; then
 	yadisk_file=$attachment
 fi
 
-command="curl --show-error --fail --connect-timeout 10 --max-time 30 --retry 3 $verbosity"
-command="$command --user '${yadisk_username}:$yadisk_password'"
+command="$CURL $verbosity --user '${yadisk_username}:$yadisk_password'"
 
 url="https://webdav.yandex.ru"
 yadisk_path=$(date +"$yadisk_path")
@@ -50,13 +56,19 @@ subdir="${subdir// /%20}" # convert each space into %20
 for subdir in ${subdirs//\// }; do
 	subdir="${subdirs%%/*}"  # leftmost directory
 	suburl="$suburl/$subdir"
-	[ -n "$subdir" ] && sh -c "$command --request MKCOL $url$suburl"
+	if [ -n "$subdir" ]; then
+		sh -c "$command --request MKCOL $url$suburl"
+	fi
 	subdirs="${subdirs#*/}" # remove the processed directory
 done
 
-command="$command --request PUT --upload-file $yadisk_file --url $url/$yadisk_path/$(TZ=$(cat /etc/TZ) date +"%G%m%d-%H%M%S").jpg"
+command="$command --request PUT --upload-file $yadisk_file"
+command="$command --url $url/$yadisk_path/$(TZ=$(cat /etc/TZ) date +"%G%m%d-%H%M%S").jpg"
 
-sh -c "$command" || die "Failed to upload file to Yandex Disk"
+if ! sh -c "$command"; then
+	echo_error "Failed to upload file to Yandex Disk"
+	exit 1
+fi
 
 [ -f "$attachment" ] && rm "$attachment"
 

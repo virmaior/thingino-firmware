@@ -2,7 +2,7 @@
 
 . /usr/share/common
 
-if [ "$#" -ne 2 ]; then
+if [ "$1" != "list" ] && [ "$#" -ne 2 ]; then
 	echo "Usage: $0 <action> <servicename>
 Where actions:
 	start     Start the service
@@ -11,7 +11,8 @@ Where actions:
 	reload    Reload the service
 	enable    Enable the service on boot
 	disable   Disable the service on boot
-"
+	list      List all services
+" >&2
 	exit 1
 fi
 
@@ -19,17 +20,21 @@ ACTION=$1
 SERVICE=$2
 
 SCRIPT=$(ls /etc/init.d/[FKS][0-9][0-9]$SERVICE 2> /dev/null)
-if [ -z "$SCRIPT" ]; then
-	echo "Service $SERVICE not found"
+if [ "$1" != "list" ] && [ -z "$SCRIPT" ]; then
+	echo_error "Service $SERVICE not found"
 	exit 1
 fi
 
 case "$ACTION" in
 	start | stop | reload | restart)
 		if ! $SCRIPT $ACTION; then
-			echo "Failed to $ACTION $SERVICE"
+			echo_error "Failed to $ACTION $SERVICE"
 			exit 1
 		fi
+		;;
+	list)
+		ls -1 /etc/init.d/[FKS][0-9][0-9]* | \
+			awk -F/ '{gsub(/[FKS]\d{2}/,"",$4);print $4}' | sort
 		;;
 	enable)
 		chmod +x $SCRIPT
@@ -38,7 +43,7 @@ case "$ACTION" in
 		chmod -x $SCRIPT
 		;;
 	*)
-		echo "Invalid action: $ACTION"
+		echo_error "Invalid action: $ACTION"
 		exit 1
 		;;
 esac

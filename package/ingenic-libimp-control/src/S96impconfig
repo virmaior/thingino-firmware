@@ -6,12 +6,15 @@ config="/etc/imp.conf"
 
 check_imp() {
 	local isp_path
-	case $(soc -f) in
-		t10 | t20) isp_path="/proc/jz/isp/isp_info" ;;
-		*) isp_path="/proc/jz/isp/isp-fs" ;;
+
+	case "$SOC_FAMILY" in
+		t10 | t20)
+			isp_path="/proc/jz/isp/isp_info" ;;
+		*)
+			isp_path="/proc/jz/isp/isp-fs" ;;
 	esac
 
-	echo "Connect to libimp-control"
+	echo_info "Connecting to libimp-control"
 	local i=10
 	while [ "$i" -gt 0 ]; do
 		if grep -Eq "running|Software" $isp_path; then
@@ -23,33 +26,38 @@ check_imp() {
 		echo -n "."
 		sleep 1
 	done
-	die " Timeout"
-}
-
-restore_config() {
-	echo -n "Restore IMP Configuration: "
-	[ -f "$config" ] || quit "Nothing to restore"
-
-	while read -r line; do
-		imp-control $line > /dev/null
-	done < $config
+	echo_error "Timeout"
+	exit 1
 }
 
 start() {
-	is_streamer_disabled && quit "Streamer disabled"
+	echo_title "IMP Configuration"
+
+	if is_streamer_disabled; then
+		echo_error "Streamer disabled"
+		exit 1
+	fi
+
 	check_imp
-	restore_config
+
+	if [ -f "$config" ]; then
+		echo_info "Restore IMP Configuration"
+		while read -r line; do
+			imp-control $line > /dev/null
+		done < $config
+	else
+		echo_warning "Nothing to restore"
+	fi
 }
 
 case "$1" in
 	start)
-		starting
 		start
 		;;
 	stop)
 		true
 		;;
-	reload | restart)
+	restart)
 		stop
 		start
 		;;

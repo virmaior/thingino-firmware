@@ -8,6 +8,10 @@ PIDFILE="/run/$DAEMON_SHORT.$IFACE.pid"
 WLAN_INT_FILE="/etc/network/interfaces.d/wlan0"
 DAEMON_ARGS="-i $IFACE -c $CONFIG -P $PIDFILE -B"
 
+if [ "true" = "$debug" ]; then
+	DAEMON_ARGS="$DAEMON_ARGS -dd"
+fi
+
 password_changed() {
 	old_pass=$(awk -F= '/^\s*psk=/{gsub(/^"|"$/, "", $2); print $2}' $CONFIG)
 	[ "$old_pass" != "$wlan_pass" ]
@@ -19,7 +23,7 @@ ssid_changed() {
 }
 
 start() {
-	starting
+	echo_title "Starting WPA Supplicant"
 
 	# convert plain-text password no matter what
 	if [ -n "$wlan_pass" ] && [ ${#wlan_pass} -lt 64 ]; then
@@ -30,18 +34,23 @@ start() {
 		rm -f $tmpfile
 	fi
 
-	iface_exists "wlan0" || quit "No wireless interface"
+	if ! iface_exists "wlan0"; then
+		echo_error "No wireless interface"
+		exit 1
+	fi
 
 	if [ -z "$wlan_pass" ]; then
-		quit "WiFi password missing"
+		echo_error "WiFi password missing"
 	fi
 
 	if [ -z "${wlan_ssid}${wlan_bssid}" ]; then
-		quit "WiFi network missing"
+		echo_error "WiFi network missing"
+		exit 1
 	fi
 
 	if grep -q "^#auto wlan0" $WLAN_INT_FILE; then
-		quit "wlan0 manually disabled"
+		echo_error "wlan0 manually disabled"
+		exit 1
 	fi
 
 	if [ ! -f "$CONFIG" ] || ssid_changed || password_changed; then
@@ -54,13 +63,17 @@ start() {
 		fi
 	fi
 
-	[ "true" = "$wlanap_enabled" ] && quit "WLAN AP enabled"
+	if [ "true" = "$wlanap_enabled" ]; then
+		echo_error "WLAN AP enabled"
+		exit 1
+	fi
 
-	start-stop-daemon -S -x $DAEMON_FULL -- $DAEMON_ARGS 2>&1 | log
+	start-stop-daemon -S -x $DAEMON_FULL -- $DAEMON_ARGS 2>&1
 }
 
 stop() {
-	stopping
+	echo_title "Stopping WPA Supplicant"
+
 	stop_daemon
 }
 
@@ -71,12 +84,13 @@ case "$1" in
 	stop)
 		stop
 		;;
-	reload | restart)
+	restart)
 		stop
 		start
 		;;
 	*)
-		die "Usage: $0 {start|stop|restart|reload}"
+		echo "Usage: $0 {start|stop|restart|reload}"
+		exit 1
 		;;
 esac
 

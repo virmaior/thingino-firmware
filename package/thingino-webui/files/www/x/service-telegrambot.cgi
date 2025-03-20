@@ -61,9 +61,11 @@ telegrambot_script_7=\"$telegrambot_script_7\"
 telegrambot_script_8=\"$telegrambot_script_8\"
 telegrambot_script_9=\"$telegrambot_script_9\"
 "
-		/etc/init.d/S93telegrambot restart >/dev/null
+		service restart telegrambot >/dev/null
+		redirect_to $SCRIPT_NAME "success" "Data updated."
+	else
+		redirect_to $SCRIPT_NAME "danger" "Error: $error"
 	fi
-	redirect_to $SCRIPT_NAME
 fi
 
 for p in $params; do
