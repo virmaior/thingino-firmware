@@ -11,10 +11,12 @@ SELF_NAME="$(basename "$0")"
 
 if ! is_streamer_running; then
 	echo_error "Streamer is not running"
+	exit 1
 fi
 
 if is_streamer_disabled; then
 	echo_error "Streamer disabled"
+	exit 1
 fi
 
 hesitate() {
@@ -165,7 +167,7 @@ fi
 # FIXME: based on default stream endpoint name, won't work on custom endpoints
 stream_endpoint="ch$stream_number"
 
-rtsp_stream="rtsp://[::1]/$stream_endpoint"
+rtsp_stream="rtsp://127.0.0.1/$stream_endpoint"
 
 rtsp_username=$(read_config "username" "thingino")
 
@@ -227,6 +229,7 @@ while : ; do
 			get_free_space
 			if ! has_files "$record_storage"; then
 				echo_error "$record_mount is empty yet no space!"
+				exit 1
 			fi
 		done
 	fi
@@ -240,21 +243,19 @@ while : ; do
 			get_occupied_space
 			if ! has_files "$record_storage"; then
 				echo_error "$record_mount is empty yet no space!"
+				exit 1
 			fi
 		done
 	fi
 
 	record_file="$record_storage/$(date +"$record_filename").$record_videofmt"
-	ensure_dir "$(basedir $record_file)"
+	ensure_dir "$(dirname $record_file)"
 
 	real_duration=$(fix_duration $record_duration)
 
-	timeout $((real_duration + 5)) \
-		openRTSP -V -u $rtsp_username $rtsp_password \
-			-w $stream_width -h $stream_height -f $stream_fps \
-			-d $real_duration $vformat -b 1048576 \
-			-t $rtsp_stream > "$record_file" \
-			2> /dev/null
+	command="openRTSP -V -u $rtsp_username $rtsp_password -w $stream_width -h $stream_height -f $stream_fps -d $real_duration $vformat -b 1048576 -t $rtsp_stream > \"$record_file\""
+	echo_command "$command"
+	timeout $((real_duration + 5)) sh -c "$command" 2> /dev/null
 
 	[ "true" = "$one_time" ] && rm $RECORD_FLAG
 done
