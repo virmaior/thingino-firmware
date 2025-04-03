@@ -64,6 +64,17 @@ export CONFIG_PARTITION_DIR
 STDOUT_LOG ?= $(OUTPUT_DIR)/compilation.log
 STDERR_LOG ?= $(OUTPUT_DIR)/compilation-errors.log
 
+ifeq ($(GROUP),github)
+	SUBDIR := configs/github
+else ifeq ($(GROUP),modules)
+	SUBDIR := configs/modules
+else ifeq ($(GROUP),)
+	SUBDIR := configs/cameras
+else
+	SUBDIR := configs/cameras-$(GROUP)
+endif
+export SUBDIR
+
 # handle the board
 include $(BR2_EXTERNAL)/board.mk
 
@@ -419,10 +430,9 @@ $(U_BOOT_ENV_TXT): $(OUTPUT_DIR)/.config
 	$(info -------------------------------- $@)
 	touch $@
 	grep -v '^#' $(BR2_EXTERNAL)/configs/common.uenv.txt | tee -a $@
-	grep -v '^#' $(BR2_EXTERNAL)/configs/cameras/$(CAMERA)/$(CAMERA).uenv.txt | tee -a $@
-	[ $(RELEASE) -ne 1 ] && grep -v '^#' $(BR2_EXTERNAL)/configs/local.uenv.txt | tee -a $@
+	grep -v '^#' $(BR2_EXTERNAL)/$(SUBDIR)/$(CAMERA)/$(CAMERA).uenv.txt | tee -a $@
+	grep -v '^#' $(BR2_EXTERNAL)/configs/local.uenv.txt | tee -a $@
 	sort -u -o $@ $@
-	sed -i '/^\s*$$/d' $@
 
 $(FIRMWARE_BIN_FULL): $(U_BOOT_BIN) $(UB_ENV_BIN) $(CONFIG_BIN) $(KERNEL_BIN) $(ROOTFS_BIN) $(EXTRAS_BIN)
 	$(info -------------------------------- $@)
