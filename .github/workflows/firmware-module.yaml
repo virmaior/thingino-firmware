@@ -99,7 +99,7 @@ jobs:
       - name: Generate device matrix
         id: set-matrix
         run: |
-              if [[ "${{ github.event.inputs.aw_only }}" == "true" ]]; then
+          if [[ "${{ github.event.inputs.aw_only }}" == "true" ]]; then
             CONFIGS=$(find configs/cameras/ -type f | sort | awk -F '/' '{print $(NF)}' | awk NF | grep -E 'atom|wyze_cam3_t31x_gc2053_rtl8189ftv')
           else
             CONFIGS=$(find configs/modules/ -type f | sort | awk -F '/' '{print $(NF)}' | awk NF)
