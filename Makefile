@@ -8,15 +8,16 @@ ifeq ($(__BASH_MAKE_COMPLETION__),1)
 	exit
 endif
 
-# Run dependency check before doing anything, but skip if WORKFLOW=1
+# Run dependency check before doing anything, but skip if WORKFLOW=1 or if .prereqs.done exists
 ifeq ($(WORKFLOW),)
-  _dep_check := $(shell $(CURDIR)/scripts/dep_check.sh>&2; echo $$?)
-  ifneq ($(lastword $(_dep_check)),0)
-    $(error Dependency check failed)
-  endif
+ifeq ($(wildcard $(CURDIR)/.prereqs.done),)
+	_dep_check := $(shell $(CURDIR)/scripts/dep_check.sh>&2; echo $$?)
+	ifneq ($(lastword $(_dep_check)),0)
+	$(error Dependency check failed)
+	endif
+endif
 else
-   $(info Skipping dependency check for workflow)
-  _dep_check := 0
+$(info Skipping dependency check for workflow)
 endif
 
 # Camera IP address
@@ -192,6 +193,18 @@ BUILD_DATE="$(shell env -u SOURCE_DATE_EPOCH TZ=UTC date '+%Y-%m-%d %H:%M:%S %z'
 
 RELEASE = 0
 
+EDITOR := $(shell which nano vim vi ed 2>/dev/null | head -1)
+
+define edit_file
+	$(info -------------------------------- $(1))
+	@if [ -z "$(EDITOR)" ]; then \
+		echo "No suitable editor found!"; \
+		exit 1; \
+	else \
+		$(EDITOR) $(2); \
+	fi
+endef
+
 # make command for buildroot
 BR2_MAKE = $(MAKE) -C $(BR2_EXTERNAL)/buildroot BR2_EXTERNAL=$(BR2_EXTERNAL) O=$(OUTPUT_DIR)
 
@@ -240,6 +253,55 @@ FRAGMENTS = $(shell awk '/FRAG:/ {$$1=$$1;gsub(/^.+:\s*/,"");print}' $(MODULE_CO
 defconfig: buildroot/Makefile $(OUTPUT_DIR)/.config
 	$(info -------------------------------- $@)
 	@$(FIGLET) $(CAMERA)
+
+edit:
+	@bash -c 'while true; do \
+		CHOICE=$$(dialog --keep-tite --colors --title "Edit Menu" --menu "Choose an option to edit:" 16 60 10 \
+			"1" "Camera Config (edit-defconfig)" \
+			"2" "Module Config (edit-module)" \
+			"3" "Camera U-Boot Environment (edit-uenv)" \
+			"" "━━━━━━━━━ LOCAL OVERRIDES ━━━━━━━━━" \
+			"4" "Local Fragment (edit-localfragment)" \
+			"5" "Local Config (edit-localconfig)" \
+			"6" "Local Makefile (edit-localmk)" \
+			"7" "Local U-Boot Evironment (edit-localuenv)" 2>&1 >/dev/tty) || { echo "Menu cancelled"; exit 0; }; \
+		\
+		[ -z "$$CHOICE" ] && { echo "Separator selected, ignoring"; continue; }; \
+		\
+		case "$$CHOICE" in \
+			"1") FILE="$(CAMERA_CONFIG_REAL)" ;; \
+			"2") FILE="$(MODULE_CONFIG_REAL)" ;; \
+			"3") FILE="$(BR2_EXTERNAL)/$(CAMERA_SUBDIR)/$(CAMERA)/$(CAMERA).uenv.txt" ;; \
+			"4") FILE="$(BR2_EXTERNAL)/configs/local.fragment" ;; \
+			"5") FILE="$(BR2_EXTERNAL)/configs/local.config" ;; \
+			"6") FILE="$(BR2_EXTERNAL)/local.mk" ;; \
+			"7") FILE="$(BR2_EXTERNAL)/configs/local.uenv.txt" ;; \
+			*) echo "Invalid option"; continue ;; \
+		esac; \
+		\
+		[ -z "$(EDITOR)" ] && { echo "No suitable editor found!"; exit 1; } || { $(EDITOR) "$$FILE"; break; }; \
+	done'
+
+edit-defconfig:
+	$(call edit_file,$@,$(CAMERA_CONFIG_REAL))
+
+edit-module:
+	$(call edit_file,$@,$(MODULE_CONFIG_REAL))
+
+edit-uenv:
+	$(call edit_file,$@,$(BR2_EXTERNAL)/$(CAMERA_SUBDIR)/$(CAMERA)/$(CAMERA).uenv.txt)
+
+edit-localmk:
+	$(call edit_file,$@,$(BR2_EXTERNAL)/local.mk)
+
+edit-localconfig:
+	$(call edit_file,$@,$(BR2_EXTERNAL)/configs/local.config)
+
+edit-localfragment:
+	$(call edit_file,$@,$(BR2_EXTERNAL)/configs/local.fragment)
+
+edit-localuenv:
+	$(call edit_file,$@,$(BR2_EXTERNAL)/configs/local.uenv.txt)
 
 select-device:
 	$(info -------------------------------- $@)
@@ -432,7 +494,7 @@ $(U_BOOT_ENV_TXT): $(OUTPUT_DIR)/.config
 	$(info -------------------------------- $@)
 	touch $@
 	grep -v '^#' $(BR2_EXTERNAL)/configs/common.uenv.txt | tee -a $@
-	grep -v '^#' $(BR2_EXTERNAL)/$(SUBDIR)/$(CAMERA)/$(CAMERA).uenv.txt | tee -a $@
+	grep -v '^#' $(BR2_EXTERNAL)/$(CAMERA_SUBDIR)/$(CAMERA)/$(CAMERA).uenv.txt | tee -a $@
 	grep -v '^#' $(BR2_EXTERNAL)/configs/local.uenv.txt | tee -a $@
 	sort -u -o $@ $@
 
