@@ -13,10 +13,11 @@ sanitize() {
 }
 
 html_safe() {
-	text="$1"
-	text=${text//&/&amp;}
-	text=${text//\`/&grave;}
-	text=${text//\"/&quot;}
+	text=$*
+	text=${text//&/\&amp;}
+	text=${text//\`/\&grave;}
+	text=${text//\"/\&quot;}
+	text=${text// /\&nbsp;}
 	echo $text
 }
 
@@ -93,8 +94,8 @@ elif post_request; then
 		temp_file=$(mktemp -u)
 		if [ "true" = "$wlanap_enabled" ]; then
 			wlanap_pass=$(convert_psk "$wlanap_ssid" "$wlanap_pass")
-			printf "wlanap_enabled %s\nwlanap_ssid %s\nwlanap_pass %s\n" \
-				"$wlanap_enabled" "$wlanap_ssid" "$wlanap_pass" > $temp_file
+			printf "wlanap_ssid %s\nwlanap_pass %s\n" \
+				"$wlanap_ssid" "$wlanap_pass" > $temp_file
 		else
 			wlan_pass=$(convert_psk "$wlan_ssid" "$wlan_pass")
 			printf "wlan_ssid %s\nwlan_pass %s\n" \
@@ -102,6 +103,9 @@ elif post_request; then
 		fi
 		fw_setenv -s $temp_file
 		rm -f $temp_file
+
+		# set wlanap status
+		conf s wlanap_enabled $wlanap_enabled
 
 		# update env dump
 		refresh_env_dump

@@ -63,6 +63,13 @@ else ifeq ($(BR2_SOC_INGENIC_T20X),y)
 	BR2_SOC_INGENIC_T20 := y
 	BR2_XBURST_1 := y
 	UBOOT_BOARDNAME := "isvp_t20_sfcnor_ddr128M"
+else ifeq ($(BR2_SOC_INGENIC_T20Z),y)
+	SOC_FAMILY := t20
+	SOC_MODEL := t20z
+	SOC_RAM := 64
+	BR2_SOC_INGENIC_T20 := y
+	BR2_XBURST_1 := y
+	UBOOT_BOARDNAME := "isvp_t20_sfcnor"
 else ifeq ($(BR2_SOC_INGENIC_T21L),y)
 	SOC_FAMILY := t21
 	SOC_MODEL := t21l
@@ -105,6 +112,13 @@ else ifeq ($(BR2_SOC_INGENIC_T23N),y)
 	BR2_SOC_INGENIC_T23 := y
 	BR2_XBURST_1 := y
 	UBOOT_BOARDNAME := "isvp_t23n_sfcnor"
+else ifeq ($(BR2_SOC_INGENIC_T23DL),y)
+	SOC_FAMILY := t23
+	SOC_MODEL := t23dl
+	SOC_RAM := 32
+	BR2_SOC_INGENIC_T23 := y
+	BR2_XBURST_1 := y
+	UBOOT_BOARDNAME := "isvp_t23dl_sfcnor"
 else ifeq ($(BR2_SOC_INGENIC_T23ZN),y)
 	SOC_FAMILY := t23
 	SOC_MODEL := t23zn
@@ -223,6 +237,29 @@ else ifeq ($(BR2_SOC_INGENIC_T31ZX),y)
 	UBOOT_BOARDNAME := "isvp_t31_sfcnand_ddr128M"
 	else
 	UBOOT_BOARDNAME := "isvp_t31_sfcnor_ddr128M"
+	endif
+else ifeq ($(BR2_SOC_INGENIC_C100),y)
+    ifeq ($(KERNEL_VERSION_4),y)
+	SOC_FAMILY := c100
+	else
+	SOC_FAMILY := t31
+	endif
+    ifeq ($(KERNEL_VERSION_4),y)
+	SOC_MODEL := c100
+	else
+	SOC_MODEL := t31x
+	endif
+	SOC_RAM := 128
+    ifeq ($(KERNEL_VERSION_4),y)
+	BR2_SOC_INGENIC_C100 := y
+	else
+	BR2_SOC_INGENIC_T31 := y
+	endif
+	BR2_XBURST_1 := y
+	ifeq ($(BR2_THINGINO_FLASH_NAND),y)
+	UBOOT_BOARDNAME := "isvp_c100_sfcnand"
+	else
+	UBOOT_BOARDNAME := "isvp_c100_sfcnor"
 	endif
 else ifeq ($(BR2_SOC_INGENIC_T40N),y)
 	SOC_FAMILY := t40
@@ -390,6 +427,7 @@ export BR2_SOC_INGENIC_T30
 export BR2_SOC_INGENIC_T31
 export BR2_SOC_INGENIC_T40
 export BR2_SOC_INGENIC_T41
+export BR2_SOC_INGENIC_C100
 export BR2_XBURST_1
 export BR2_XBURST_2
 export INGENIC_ARCH
@@ -440,8 +478,20 @@ else ifeq ($(BR2_SOC_INGENIC_T31),y)
 		KERNEL_BRANCH := ingenic-t31
 	else ifeq ($(KERNEL_VERSION_4),y)
 		KERNEL_VERSION := 4.4
-		KERNEL_SITE := https://github.com/matteius/ingenic-t31-zrt-kernel-4.4.94
-		KERNEL_BRANCH := stable
+		KERNEL_SITE := https://github.com/gtxaspec/thingino-linux
+		KERNEL_BRANCH := ingenic-t31-4.4.94
+		#KERNEL_SITE := https://github.com/matteius/ingenic-t31-zrt-kernel-4.4.94
+		#KERNEL_BRANCH := stable
+	endif
+else ifeq ($(BR2_SOC_INGENIC_C100),y)
+	ifeq ($(KERNEL_VERSION_3),y)
+		KERNEL_VERSION := 3.10
+		KERNEL_SITE := https://github.com/gtxaspec/thingino-linux
+		KERNEL_BRANCH := ingenic-t31
+	else ifeq ($(KERNEL_VERSION_4),y)
+		KERNEL_VERSION := 4.4
+		KERNEL_SITE := https://github.com/gtxaspec/thingino-linux
+		KERNEL_BRANCH := ingenic-t31-4.4.94
 	endif
 else
 	KERNEL_VERSION := 3.10
@@ -710,6 +760,8 @@ else ifeq ($(BR2_SENSOR_SC500AI),y)
 	SENSOR_MODEL := sc500ai
 else ifeq ($(BR2_SENSOR_SC5235),y)
 	SENSOR_MODEL := sc5235
+else ifeq ($(BR2_SENSOR_SC5336),y)
+	SENSOR_MODEL := sc5336
 else ifeq ($(BR2_SENSOR_SP1405),y)
 	SENSOR_MODEL := sp1405
 else ifeq ($(BR2_SENSOR_TP2850),y)
@@ -833,54 +885,38 @@ endif
 
 export ISP_NMEM
 
-# Default ISP clock speed
-ifeq ($(BR2_ISP_CLK_90MHZ),y)
-	ISP_CLK := 90000000
-else ifeq ($(BR2_ISP_CLK_100MHZ),y)
-	ISP_CLK := 100000000
-else ifeq ($(BR2_ISP_CLK_120MHZ),y)
-	ISP_CLK := 120000000
-else ifeq ($(BR2_ISP_CLK_125MHZ),y)
-	ISP_CLK := 125000000
-else ifeq ($(BR2_ISP_CLK_150MHZ),y)
-	ISP_CLK := 150000000
-else ifeq ($(BR2_ISP_CLK_175MHZ),y)
-	ISP_CLK := 175000000
-else ifeq ($(BR2_ISP_CLK_200MHZ),y)
-	ISP_CLK := 200000000
-else ifeq ($(BR2_ISP_CLK_220MHZ),y)
-	ISP_CLK := 220000000
-else ifeq ($(BR2_ISP_CLK_225MHZ),y)
-	ISP_CLK := 225000000
-else ifeq ($(BR2_ISP_CLK_250MHZ),y)
-	ISP_CLK := 250000000
-else ifeq ($(BR2_ISP_CLK_300MHZ),y)
-	ISP_CLK := 300000000
-else ifeq ($(BR2_ISP_CLK_350MHZ),y)
-	ISP_CLK := 350000000
+# Default IPU clock speed
+ifeq ($(BR2_IPU_CLK_SCLKA),y)
+	IPU_CLK_SRC := clk_name=sclka
+else ifeq ($(BR2_IPU_CLK_VPLL),y)
+	IPU_CLK_SRC := clk_name=vpll
+else ifeq ($(BR2_IPU_CLK_MPLL),y)
+	IPU_CLK_SRC := clk_name=mpll
+else ifeq ($(BR2_IPU_CLK_INTERNAL),y)
+	IPU_CLK_SRC :=
 else
-	ISP_CLK := 100000000
+	IPU_CLK_SRC :=
 endif
 
-ifeq ($(BR2_AVPU_CLK_400MHZ),y)
-	AVPU_CLK := 400000000
-else ifeq ($(BR2_AVPU_CLK_450MHZ),y)
-	AVPU_CLK := 450000000
-else ifeq ($(BR2_AVPU_CLK_500MHZ),y)
-	AVPU_CLK := 500000000
-else ifeq ($(BR2_AVPU_CLK_550MHZ),y)
-	AVPU_CLK := 550000000
-else ifeq ($(BR2_AVPU_CLK_600MHZ),y)
-	AVPU_CLK := 600000000
-else ifeq ($(BR2_AVPU_CLK_650MHZ),y)
-	AVPU_CLK := 650000000
-else ifeq ($(BR2_AVPU_CLK_700MHZ),y)
-	AVPU_CLK := 700000000
+ifeq ($(BR2_IPU_CLK_400MHZ),y)
+	IPU_CLK := ipu_clk=400000000
+else ifeq ($(BR2_IPU_CLK_450MHZ),y)
+	IPU_CLK := ipu_clk=450000000
+else ifeq ($(BR2_IPU_CLK_500MHZ),y)
+	IPU_CLK := ipu_clk=500000000
+else ifeq ($(BR2_IPU_CLK_550MHZ),y)
+	IPU_CLK := ipu_clk=550000000
+else ifeq ($(BR2_IPU_CLK_600MHZ),y)
+	IPU_CLK := ipu_clk=600000000
+else ifeq ($(BR2_IPU_CLK_650MHZ),y)
+	IPU_CLK := ipu_clk=650000000
 else
-	AVPU_CLK := 400000000
+	IPU_CLK :=
 endif
 
-ifeq ($(BR2_AVPU_MPLL),y)
+ifeq ($(BR2_AVPU_APLL),y)
+	AVPU_CLK_SRC := clk_name=apll
+else ifeq ($(BR2_AVPU_MPLL),y)
 	AVPU_CLK_SRC := clk_name=mpll
 else ifeq ($(BR2_AVPU_VPLL),y)
 	AVPU_CLK_SRC := clk_name=vpll
@@ -890,34 +926,119 @@ else
 	AVPU_CLK_SRC :=
 endif
 
-ifeq ($(BR2_ISP_CLKA_400MHZ),y)
-	ISP_CLKA_CLK := 400000000
-else ifeq ($(BR2_ISP_CLKA_450MHZ),y)
-	ISP_CLKA_CLK := 450000000
-else ifeq ($(BR2_ISP_CLKA_500MHZ),y)
-	ISP_CLKA_CLK := 500000000
-else ifeq ($(BR2_ISP_CLKA_550MHZ),y)
-	ISP_CLKA_CLK := 550000000
-else ifeq ($(BR2_ISP_CLKA_600MHZ),y)
-	ISP_CLKA_CLK := 600000000
-else ifeq ($(BR2_ISP_CLKA_650MHZ),y)
-	ISP_CLKA_CLK := 650000000
-else ifeq ($(BR2_ISP_CLKA_700MHZ),y)
-	ISP_CLKA_CLK := 700000000
+ifeq ($(BR2_AVPU_CLK_400MHZ),y)
+	AVPU_CLK := avpu_clk=400000000
+else ifeq ($(BR2_AVPU_CLK_450MHZ),y)
+	AVPU_CLK := avpu_clk=450000000
+else ifeq ($(BR2_AVPU_CLK_500MHZ),y)
+	AVPU_CLK := avpu_clk=500000000
+else ifeq ($(BR2_AVPU_CLK_550MHZ),y)
+	AVPU_CLK := avpu_clk=550000000
+else ifeq ($(BR2_AVPU_CLK_600MHZ),y)
+	AVPU_CLK := avpu_clk=600000000
+else ifeq ($(BR2_AVPU_CLK_650MHZ),y)
+	AVPU_CLK := avpu_clk=650000000
+else ifeq ($(BR2_AVPU_CLK_700MHZ),y)
+	AVPU_CLK := avpu_clk=700000000
 else
-	ISP_CLKA_CLK := 400000000
+	AVPU_CLK :=
 endif
 
+# Default ISP clock speed
 ifeq ($(BR2_ISP_CLK_SCLKA),y)
 	ISP_CLK_SRC := clk_name=sclka
+else ifeq ($(BR2_ISP_CLK_VPLL),y)
+	ISP_CLK_SRC := clk_name=vpll
+else ifeq ($(BR2_ISP_CLK_MPLL),y)
+	ISP_CLK_SRC := clk_name=mpll
+else ifeq ($(BR2_ISP_CLK_INTERNAL),y)
+	ISP_CLK_SRC :=
 else
 	ISP_CLK_SRC :=
 endif
 
+ifeq ($(BR2_ISP_CLK_90MHZ),y)
+	ISP_CLK := isp_clk=90000000
+else ifeq ($(BR2_ISP_CLK_100MHZ),y)
+	ISP_CLK := isp_clk=100000000
+else ifeq ($(BR2_ISP_CLK_120MHZ),y)
+	ISP_CLK := isp_clk=120000000
+else ifeq ($(BR2_ISP_CLK_125MHZ),y)
+	ISP_CLK := isp_clk=125000000
+else ifeq ($(BR2_ISP_CLK_150MHZ),y)
+	ISP_CLK := isp_clk=150000000
+else ifeq ($(BR2_ISP_CLK_175MHZ),y)
+	ISP_CLK := isp_clk=175000000
+else ifeq ($(BR2_ISP_CLK_200MHZ),y)
+	ISP_CLK := isp_clk=200000000
+else ifeq ($(BR2_ISP_CLK_220MHZ),y)
+	ISP_CLK := isp_clk=220000000
+else ifeq ($(BR2_ISP_CLK_225MHZ),y)
+	ISP_CLK := isp_clk=225000000
+else ifeq ($(BR2_ISP_CLK_250MHZ),y)
+	ISP_CLK := isp_clk=250000000
+else ifeq ($(BR2_ISP_CLK_300MHZ),y)
+	ISP_CLK := isp_clk=300000000
+else ifeq ($(BR2_ISP_CLK_350MHZ),y)
+	ISP_CLK := isp_clk=350000000
+else
+	ISP_CLK :=
+endif
+
 ifeq ($(BR2_ISP_CLKA_SCLKA),y)
 	ISP_CLKA_CLK_SRC := clka_name=sclka
+else ifeq ($(BR2_ISP_CLKA_INTERNAL),y)
+        ISP_CLKA_CLK_SRC :=
 else
 	ISP_CLKA_CLK_SRC :=
+endif
+
+ifeq ($(BR2_ISP_CLKA_400MHZ),y)
+	ISP_CLKA_CLK := isp_clka=400000000
+else ifeq ($(BR2_ISP_CLKA_450MHZ),y)
+	ISP_CLKA_CLK := isp_clka=450000000
+else ifeq ($(BR2_ISP_CLKA_500MHZ),y)
+	ISP_CLKA_CLK := isp_clka=500000000
+else ifeq ($(BR2_ISP_CLKA_550MHZ),y)
+	ISP_CLKA_CLK := isp_clka=550000000
+else ifeq ($(BR2_ISP_CLKA_600MHZ),y)
+	ISP_CLKA_CLK := isp_clka=600000000
+else ifeq ($(BR2_ISP_CLKA_650MHZ),y)
+	ISP_CLKA_CLK := isp_clka=650000000
+else ifeq ($(BR2_ISP_CLKA_700MHZ),y)
+	ISP_CLKA_CLK := isp_clka=700000000
+else
+	ISP_CLKA_CLK :=
+endif
+
+ifeq ($(BR2_ISP_CLKS_SCLKA),y)
+	ISP_CLKS_CLK_SRC := clks_name=sclka
+else ifeq ($(BR2_ISP_CLKS_VPLL),y)
+	ISP_CLKS_CLK_SRC := clks_name=vpll
+else ifeq ($(BR2_ISP_CLKS_MPLL),y)
+	ISP_CLKS_CLK_SRC := clks_name=mpll
+else ifeq ($(BR2_ISP_CLKS_INTERNAL),y)
+        ISP_CLKS_CLK_SRC :=
+else
+	ISP_CLKS_CLK_SRC :=
+endif
+
+ifeq ($(BR2_ISP_CLKS_400MHZ),y)
+	ISP_CLKS_CLK := isp_clks=400000000
+else ifeq ($(BR2_ISP_CLKS_450MHZ),y)
+	ISP_CLKS_CLK := isp_clks=450000000
+else ifeq ($(BR2_ISP_CLKS_500MHZ),y)
+	ISP_CLKS_CLK := isp_clks=500000000
+else ifeq ($(BR2_ISP_CLKS_550MHZ),y)
+	ISP_CLKS_CLK := isp_clks=550000000
+else ifeq ($(BR2_ISP_CLKS_600MHZ),y)
+	ISP_CLKS_CLK := isp_clks=600000000
+else ifeq ($(BR2_ISP_CLKS_650MHZ),y)
+	ISP_CLKS_CLK := isp_clks=650000000
+else ifeq ($(BR2_ISP_CLKS_700MHZ),y)
+	ISP_CLKS_CLK := isp_clks=700000000
+else
+	ISP_CLKS_CLK :=
 endif
 
 ifeq ($(BR2_ISP_MEMOPT_0),y)
@@ -929,7 +1050,11 @@ else ifeq ($(BR2_ISP_MEMOPT_2),y)
 else ifeq ($(BR2_ISP_MEMOPT_3),y)
 	ISP_MEMOPT := isp_memopt=3
 else
-	ISP_MEMOPT :=
+	ifeq ($(shell test $(SOC_RAM) -le 64 && ! echo "$(SOC_FAMILY)" | grep -Eq "t10|t20|t21|t30" && echo true),true)
+		ISP_MEMOPT := isp_memopt=1
+	else
+		ISP_MEMOPT :=
+	endif
 endif
 
 ifeq ($(BR2_ISP_DAY_NIGHT_SWITCH_DROP_FRAME_NUM),y)
@@ -956,17 +1081,163 @@ else
 	ISP_CH0_PRE_DEQUEUE_VALID_LINES :=
 endif
 
-export AVPU_CLK
+ifeq ($(BR2_ISP_CH1_DEQUEUE_DELAY_TIME),y)
+	ISP_CH1_DEQUEUE_DELAY_TIME := isp_ch1_dequeue_delay_time=$(BR2_ISP_CH1_DEQUEUE_DELAY_TIME_VALUE)
+else
+	ISP_CH1_DEQUEUE_DELAY_TIME :=
+endif
+
+ifeq ($(BR2_ISP_MIPI_SWITCH_GPIO),y)
+	ISP_MIPI_SWITCH_GPIO := mipi_switch_gpio=$(BR2_ISP_MIPI_SWITCH_GPIO)
+else
+	ISP_MIPI_SWITCH_GPIO :=
+endif
+
+ifeq ($(BR2_ISP_DIRECT_MODE_0),y)
+	ISP_DIRECT_MODE := direct_mode=0
+else ifeq ($(BR2_ISP_DIRECT_MODE_1),y)
+	ISP_DIRECT_MODE := direct_mode=1
+else ifeq ($(BR2_ISP_DIRECT_MODE_2),y)
+	ISP_DIRECT_MODE := direct_mode=2
+else
+	ISP_DIRECT_MODE := direct_mode=0
+endif
+
+ifeq ($(BR2_ISP_IVDC_MEM_LINE),y)
+	ISP_IVDC_MEM_LINE := ivdc_mem_line=$(BR2_ISP_IVDC_MEM_LINE_VALUE)
+else
+	ISP_IVDC_MEM_LINE :=
+endif
+
+ifeq ($(BR2_ISP_IVDC_THRESHOLD_LINE),y)
+	ISP_IVDC_THRESHOLD_LINE := ivdc_threshold_line=$(BR2_ISP_IVDC_THRESHOLD_LINE_VALUE)
+else
+	ISP_IVDC_THRESHOLD_LINE :=
+endif
+
+ifeq ($(BR2_ISP_CONFIG_HZ),y)
+	ISP_CONFIG_HZ := isp_config_hz=$(BR2_ISP_CONFIG_HZ_VALUE)
+else
+	ISP_CONFIG_HZ :=
+endif
+
+ifeq ($(BR2_ISP_PRINT_LEVEL_0),y)
+	ISP_PRINT_LEVEL := print_level=0
+else ifeq ($(BR2_ISP_PRINT_LEVEL_1),y)
+	ISP_PRINT_LEVEL := print_level=1
+else ifeq ($(BR2_ISP_PRINT_LEVEL_2),y)
+	ISP_PRINT_LEVEL := print_level=2
+else ifeq ($(BR2_ISP_PRINT_LEVEL_3),y)
+	ISP_PRINT_LEVEL := print_level=3
+else
+	ifeq ($(shell echo "$(SOC_FAMILY)" | grep -Eq "t10|t20|t21" && echo true),true)
+		ISP_PRINT_LEVEL :=
+	else
+		ISP_PRINT_LEVEL := print_level=1
+	endif
+endif
+
+ifeq ($(BR2_ISP_ISPW),y)
+	ISP_ISPW := ispw=$(BR2_ISP_ISPW_VALUE)
+else
+	ISP_ISPW :=
+endif
+
+ifeq ($(BR2_ISP_ISPH),y)
+	ISP_ISPH := isph=$(BR2_ISP_ISPH_VALUE)
+else
+	ISP_ISPH :=
+endif
+
+ifeq ($(BR2_ISP_ISPTOP),y)
+	ISP_ISPTOP := isptop=$(BR2_ISP_ISPTOP_VALUE)
+else
+	ISP_ISPTOP :=
+endif
+
+ifeq ($(BR2_ISP_ISPLEFT),y)
+	ISP_ISPLEFT := ispleft=$(BR2_ISP_ISPLEFT_VALUE)
+else
+	ISP_ISPLEFT :=
+endif
+
+ifeq ($(BR2_ISP_ISPCROP),y)
+	ISP_ISPCROP := ispcrop=$(BR2_ISP_ISPCROP_VALUE)
+else
+	ISP_ISPCROP :=
+endif
+
+ifeq ($(BR2_ISP_ISPCROPWH),y)
+	ISP_ISPCROPWH := ispcropwh=$(BR2_ISP_ISPCROPWH_VALUE)
+else
+	ISP_ISPCROPWH :=
+endif
+
+ifeq ($(BR2_ISP_ISPCROPTL),y)
+	ISP_ISPCROPTL := ispcroptl=$(BR2_ISP_ISPCROPTL_VALUE)
+else
+	ISP_ISPCROPTL :=
+endif
+
+ifeq ($(BR2_ISP_ISPSCALER),y)
+	ISP_ISPSCALER := isp_scaler=$(BR2_ISP_ISPSCALER_VALUE)
+else
+	ISP_ISPSCALER :=
+endif
+
+ifeq ($(BR2_ISP_ISPSCALERWH),y)
+	ISP_ISPSCALERWH := isp_scalerwh=$(BR2_ISP_ISPSCALERWH_VALUE)
+else
+	ISP_ISPSCALERWH :=
+endif
+
+ifeq ($(BR2_ISP_ISP_M1_BUFS),y)
+	ISP_ISP_M1_BUFS := isp_m1_bufs=$(BR2_ISP_ISP_M1_BUFS_VALUE)
+else
+	ISP_ISP_M1_BUFS :=
+endif
+
+ifeq ($(BR2_ISP_ISP_M2_BUFS),y)
+	ISP_ISP_M2_BUFS := isp_m2_bufs=$(BR2_ISP_ISP_M2_BUFS_VALUE)
+else
+	ISP_ISP_M2_BUFS :=
+endif
+
+
 export AVPU_CLK_SRC
-export ISP_CLK
+export AVPU_CLK
+export IPU_CLK_SRC
+export IPU_CLK
 export ISP_CLK_SRC
+export ISP_CLK
+export ISP_CLKA_CLK_SRC
 export ISP_CLKA_CLK
-export ISP_CLKA_SRC
+export ISP_CLKS_CLK_SRC
+export ISP_CLKS_CLK
+
 export ISP_MEMOPT
 export ISP_DAY_NIGHT_SWITCH_DROP_FRAME_NUM
 export ISP_CH0_PRE_DEQUEUE_TIME
 export ISP_CH0_PRE_DEQUEUE_INTERRUPT_PROCESS
 export ISP_CH0_PRE_DEQUEUE_VALID_LINES
+export ISP_CH1_DEQUEUE_DELAY_TIME
+export ISP_MIPI_SWITCH_GPIO
+export ISP_DIRECT_MODE
+export ISP_IVDC_MEM_LINE
+export ISP_IVDC_THRESHOLD_LINE
+export ISP_CONFIG_HZ
+export ISP_PRINT_LEVEL
+export ISP_ISPW
+export ISP_ISPH
+export ISP_ISPTOP
+export ISP_ISPLEFT
+export ISP_ISPCROP
+export ISP_ISPCROPWH
+export ISP_ISPCROPTL
+export ISP_ISPSCALER
+export ISP_ISPSCALERWH
+export ISP_ISP_M1_BUFS
+export ISP_ISP_M2_BUFS
 
 #
 # FLASH CHIP
@@ -1038,71 +1309,6 @@ else
 endif
 
 export STREAMER
-
-#
-# SDK
-#
-
-ifeq ($(BR2_SOC_INGENIC_T10),y)
-	SDK_VERSION := 3.12.0
-else ifeq ($(BR2_SOC_INGENIC_T20),y)
-	SDK_VERSION := 3.12.0
-else ifeq ($(BR2_SOC_INGENIC_T21),y)
-	SDK_VERSION := 1.0.33
-else ifeq ($(BR2_SOC_INGENIC_T23),y)
-	SDK_VERSION := 1.1.0
-else ifeq ($(BR2_SOC_INGENIC_T30),y)
-	SDK_VERSION := 1.0.5
-else ifeq ($(BR2_SOC_INGENIC_T31),y)
-	ifeq ($(KERNEL_VERSION_4),y)
-		SDK_VERSION := 1.1.5.2
-	else
-		SDK_VERSION := 1.1.6
-	endif
-else ifeq ($(BR2_SOC_INGENIC_T40),y)
-	SDK_VERSION := 1.2.0
-else ifeq ($(BR2_SOC_INGENIC_T41),y)
-	SDK_VERSION := 1.2.0
-else ifeq ($(BR2_SOC_INGENIC_A1),y)
-	SDK_VERSION := 1.6.2
-endif
-
-# Determine project C library, set SDK C library and toolchain version
-ifeq ($(BR2_SOC_INGENIC_T31)$(KERNEL_VERSION_4),yy)
-	SDK_LIBC_NAME := uclibc
-else ifeq ($(BR2_TOOLCHAIN_USES_GLIBC),y)
-	BR2_LIBC_NAME := glibc
-	SDK_LIBC_NAME := glibc
-else ifeq ($(BR2_TOOLCHAIN_USES_UCLIBC),y)
-	BR2_LIBC_NAME := uclibc
-	SDK_LIBC_NAME := uclibc
-else ifeq ($(BR2_TOOLCHAIN_USES_MUSL),y)
-	BR2_LIBC_NAME := musl
-	SDK_LIBC_NAME := uclibc
-else
-	# default to uClibc libs
-	BR2_LIBC_NAME := unknown
-	SDK_LIBC_NAME := uclibc
-endif
-
-ifeq ($(BR2_SOC_INGENIC_T10)$(BR2_SOC_INGENIC_T20)$(BR2_SOC_INGENIC_T21)$(BR2_SOC_INGENIC_T30),y)
-	SDK_LIBC_VERSION := 4.7.2
-else ifeq ($(BR2_SOC_INGENIC_T31),y)
-	ifeq ($(KERNEL_VERSION_4),y)
-		SDK_LIBC_VERSION := 4.7.2
-	else
-		SDK_LIBC_VERSION := 5.4.0
-	endif
-else ifeq ($(BR2_SOC_INGENIC_T40)$(BR2_SOC_INGENIC_T41)$(BR2_SOC_INGENIC_A1),y)
-	SDK_LIBC_VERSION := 7.2.0
-else
-	SDK_LIBC_VERSION := 5.4.0
-endif
-
-export SDK_VERSION
-export SDK_LIBC_NAME
-export SDK_LIBC_VERSION
-export BR2_LIBC_NAME
 
 export BR2_THINGINO_MOTORS
 export BR2_THINGINO_MOTORS_SPI

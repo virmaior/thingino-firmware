@@ -47,8 +47,13 @@ BR2_DL_DIR ?= $(HOME)/dl
 #$(info Building for CAMERA: $(CAMERA))
 #endif
 
+# repo data
+GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD | tr -d '()' | xargs)
+GIT_HASH="$(shell git show -s --format=%H | cut -c1-7)"
+GIT_DATE="$(TZ=UTC0 git show --quiet --date='format-local:%Y-%m-%d %H:%M:%S UTC' --format="%cd")"
+BUILD_DATE="$(shell env -u SOURCE_DATE_EPOCH TZ=UTC date '+%Y-%m-%d %H:%M:%S %z')"
+
 # working directory
-GIT_BRANCH := $(shell git branch --show-current)
 ifeq ($(GIT_BRANCH),master)
 OUTPUT_DIR ?= $(HOME)/output/$(CAMERA)
 else ifeq ($(GIT_BRANCH),)
@@ -151,7 +156,6 @@ ROOTFS_BIN_SIZE = $(shell stat -c%s $(ROOTFS_BIN))
 EXTRAS_BIN_SIZE = $(shell stat -c%s $(EXTRAS_BIN))
 
 FIRMWARE_BIN_FULL_SIZE = $(shell stat -c%s $(FIRMWARE_BIN_FULL))
-FIRMWARE_BIN_NOBOOT_SIZE = $(shell stat -c%s $(FIRMWARE_BIN_NOBOOT))
 
 U_BOOT_BIN_SIZE_ALIGNED = $(shell echo $$((($(U_BOOT_BIN_SIZE) + $(ALIGN_BLOCK) - 1) / $(ALIGN_BLOCK) * $(ALIGN_BLOCK))))
 UB_ENV_BIN_SIZE_ALIGNED = $(shell echo $$((($(UB_ENV_BIN_SIZE) + $(ALIGN_BLOCK) - 1) / $(ALIGN_BLOCK) * $(ALIGN_BLOCK))))
@@ -184,12 +188,6 @@ EXTRAS_OFFSET = $(shell echo $$(($(ROOTFS_OFFSET) + $(ROOTFS_PARTITION_SIZE))))
 
 # special case with no uboot nor env
 EXTRAS_OFFSET_NOBOOT = $(shell echo $$(($(KERNEL_PARTITION_SIZE) + $(ROOTFS_PARTITION_SIZE))))
-
-# repo data
-GIT_BRANCH="$(shell git branch | grep '^*' | awk '{print $$2}')"
-GIT_HASH="$(shell git show -s --format=%H | cut -c1-7)"
-GIT_DATE="$(TZ=UTC0 git show --quiet --date='format-local:%Y-%m-%d %H:%M:%S UTC' --format="%cd")"
-BUILD_DATE="$(shell env -u SOURCE_DATE_EPOCH TZ=UTC date '+%Y-%m-%d %H:%M:%S %z')"
 
 RELEASE = 0
 
@@ -259,23 +257,25 @@ edit:
 		CHOICE=$$(dialog --keep-tite --colors --title "Edit Menu" --menu "Choose an option to edit:" 16 60 10 \
 			"1" "Camera Config (edit-defconfig)" \
 			"2" "Module Config (edit-module)" \
-			"3" "Camera U-Boot Environment (edit-uenv)" \
+			"3" "System Config (edit-config)" \
+			"4" "Camera U-Boot Environment (edit-uenv)" \
 			"" "━━━━━━━━━ LOCAL OVERRIDES ━━━━━━━━━" \
-			"4" "Local Fragment (edit-localfragment)" \
-			"5" "Local Config (edit-localconfig)" \
-			"6" "Local Makefile (edit-localmk)" \
-			"7" "Local U-Boot Evironment (edit-localuenv)" 2>&1 >/dev/tty) || { echo "Menu cancelled"; exit 0; }; \
+			"5" "Local Fragment (edit-localfragment)" \
+			"6" "Local Config (edit-localconfig)" \
+			"7" "Local Makefile (edit-localmk)" \
+			"8" "Local U-Boot Evironment (edit-localuenv)" 2>&1 >/dev/tty) || exit 0; \
 		\
-		[ -z "$$CHOICE" ] && { echo "Separator selected, ignoring"; continue; }; \
+		[ -z "$$CHOICE" ] && continue; \
 		\
 		case "$$CHOICE" in \
 			"1") FILE="$(CAMERA_CONFIG_REAL)" ;; \
 			"2") FILE="$(MODULE_CONFIG_REAL)" ;; \
-			"3") FILE="$(BR2_EXTERNAL)/$(CAMERA_SUBDIR)/$(CAMERA)/$(CAMERA).uenv.txt" ;; \
-			"4") FILE="$(BR2_EXTERNAL)/configs/local.fragment" ;; \
-			"5") FILE="$(BR2_EXTERNAL)/configs/local.config" ;; \
-			"6") FILE="$(BR2_EXTERNAL)/local.mk" ;; \
-			"7") FILE="$(BR2_EXTERNAL)/configs/local.uenv.txt" ;; \
+			"3") FILE="$(BR2_EXTERNAL)/$(CAMERA_SUBDIR)/$(CAMERA)/$(CAMERA).config" ;; \
+			"4") FILE="$(BR2_EXTERNAL)/$(CAMERA_SUBDIR)/$(CAMERA)/$(CAMERA).uenv.txt" ;; \
+			"5") FILE="$(BR2_EXTERNAL)/configs/local.fragment" ;; \
+			"6") FILE="$(BR2_EXTERNAL)/configs/local.config" ;; \
+			"7") FILE="$(BR2_EXTERNAL)/local.mk" ;; \
+			"8") FILE="$(BR2_EXTERNAL)/configs/local.uenv.txt" ;; \
 			*) echo "Invalid option"; continue ;; \
 		esac; \
 		\
@@ -287,6 +287,9 @@ edit-defconfig:
 
 edit-module:
 	$(call edit_file,$@,$(MODULE_CONFIG_REAL))
+
+edit-config:
+	$(call edit_file,$@,$(BR2_EXTERNAL)/$(CAMERA_SUBDIR)/$(CAMERA)/$(CAMERA).config)
 
 edit-uenv:
 	$(call edit_file,$@,$(BR2_EXTERNAL)/$(CAMERA_SUBDIR)/$(CAMERA)/$(CAMERA).uenv.txt)
@@ -367,13 +370,17 @@ pack: $(FIRMWARE_BIN_FULL) $(FIRMWARE_BIN_NOBOOT)
 	echo "# ${GIT_BRANCH}+${GIT_HASH}, ${BUILD_DATE}" >> "$(FIRMWARE_BIN_FULL).sha256sum"
 	sha256sum $(FIRMWARE_BIN_FULL) | awk '{print $$1 "  " filename}' filename="$(FIRMWARE_NAME_FULL)" >> $(FIRMWARE_BIN_FULL).sha256sum
 
-	if [ $(FIRMWARE_BIN_NOBOOT_SIZE) -gt $(FIRMWARE_NOBOOT_SIZE) ]; then $(FIGLET) "OVERSIZE"; fi
 	rm -f $(FIRMWARE_BIN_NOBOOT).sha256sum
 	echo "$(shell echo \# $(CAMERA))" >> $(FIRMWARE_BIN_NOBOOT).sha256sum
 	echo "# ${GIT_BRANCH}+${GIT_HASH}, ${BUILD_DATE}" >> "$(FIRMWARE_BIN_NOBOOT).sha256sum"
 	sha256sum $(FIRMWARE_BIN_NOBOOT) | awk '{print $$1 "  " filename}' filename="$(FIRMWARE_NAME_NOBOOT)" >> $(FIRMWARE_BIN_NOBOOT).sha256sum
 	@$(FIGLET) $(CAMERA)
 	@$(FIGLET) "FINE"
+	@echo "--------------------------------"
+	@echo "Full Image:"
+	@echo "$(FIRMWARE_BIN_FULL)"
+	@echo "Update Image:"
+	@echo "$(FIRMWARE_BIN_NOBOOT)"
 
 # rebuild a package
 rebuild-%: defconfig
@@ -420,6 +427,11 @@ upgrade_ota: $(FIRMWARE_BIN_FULL)
 upload_tftp: $(FIRMWARE_BIN_FULL)
 	$(info -------------------------------- $@)
 	busybox tftp -l $(FIRMWARE_BIN_FULL) -r $(FIRMWARE_NAME_FULL) -p $(TFTP_IP_ADDRESS)
+
+# download buildroot cache bundle from latest github release
+download-cache:
+	$(info -------------------------------- $@)
+	BR2_EXTERNAL=$(CURDIR) BR2_DL_DIR=$(BR2_DL_DIR) $(CURDIR)/scripts/dl_buildroot_cache.sh
 
 ### Buildroot
 
@@ -493,26 +505,23 @@ endif
 $(U_BOOT_ENV_TXT): $(OUTPUT_DIR)/.config
 	$(info -------------------------------- $@)
 	touch $@
-	grep -v '^#' $(BR2_EXTERNAL)/configs/common.uenv.txt | tee -a $@
-	grep -v '^#' $(BR2_EXTERNAL)/$(CAMERA_SUBDIR)/$(CAMERA)/$(CAMERA).uenv.txt | tee -a $@
-	grep -v '^#' $(BR2_EXTERNAL)/configs/local.uenv.txt | tee -a $@
+	grep -v '^#' $(BR2_EXTERNAL)/configs/common.uenv.txt | awk NF | tee -a $@
+	grep -v '^#' $(BR2_EXTERNAL)/$(CAMERA_SUBDIR)/$(CAMERA)/$(CAMERA).uenv.txt | awk NF | tee -a $@
+	grep -v '^#' $(BR2_EXTERNAL)/configs/local.uenv.txt | awk NF | tee -a $@
 	sort -u -o $@ $@
 
 $(FIRMWARE_BIN_FULL): $(U_BOOT_BIN) $(UB_ENV_BIN) $(CONFIG_BIN) $(KERNEL_BIN) $(ROOTFS_BIN) $(EXTRAS_BIN)
 	$(info -------------------------------- $@)
-	dd if=/dev/zero bs=$(SIZE_8M) skip=0 count=1 status=none | tr '\000' '\377' > $@
+	dd if=/dev/zero bs=$(FIRMWARE_FULL_SIZE) skip=0 count=1 status=none | tr '\000' '\377' > $@
 	dd if=$(U_BOOT_BIN) bs=$(U_BOOT_BIN_SIZE) seek=$(U_BOOT_OFFSET)B count=1 of=$@ conv=notrunc status=none
 	dd if=$(CONFIG_BIN) bs=$(CONFIG_BIN_SIZE) seek=$(CONFIG_OFFSET)B count=1 of=$@ conv=notrunc status=none
 	dd if=$(KERNEL_BIN) bs=$(KERNEL_BIN_SIZE) seek=$(KERNEL_OFFSET)B count=1 of=$@ conv=notrunc status=none
 	dd if=$(ROOTFS_BIN) bs=$(ROOTFS_BIN_SIZE) seek=$(ROOTFS_OFFSET)B count=1 of=$@ conv=notrunc status=none
 	dd if=$(EXTRAS_BIN) bs=$(EXTRAS_BIN_SIZE) seek=$(EXTRAS_OFFSET)B count=1 of=$@ conv=notrunc status=none
 
-$(FIRMWARE_BIN_NOBOOT): $(KERNEL_BIN) $(ROOTFS_BIN) $(EXTRAS_BIN)
+$(FIRMWARE_BIN_NOBOOT): $(FIRMWARE_BIN_FULL)
 	$(info -------------------------------- $@)
-	dd if=/dev/zero bs=$(FIRMWARE_NOBOOT_SIZE) skip=0 count=1 status=none | tr '\000' '\377' > $@
-	dd if=$(KERNEL_BIN) bs=$(KERNEL_BIN_SIZE) seek=0 count=1 of=$@ conv=notrunc status=none
-	dd if=$(ROOTFS_BIN) bs=$(ROOTFS_BIN_SIZE) seek=$(KERNEL_PARTITION_SIZE)B count=1 of=$@ conv=notrunc status=none
-	dd if=$(EXTRAS_BIN) bs=$(EXTRAS_BIN_SIZE) seek=$(EXTRAS_OFFSET_NOBOOT)B count=1 of=$@ conv=notrunc status=none
+	dd if=$(FIRMWARE_BIN_FULL) of=$@ bs=$(FIRMWARE_NOBOOT_SIZE) count=1 skip=$(KERNEL_OFFSET)B
 
 $(U_BOOT_BIN):
 	$(info -------------------------------- $@)
@@ -577,6 +586,7 @@ help:
 	Usage:\n\
 	  make bootstrap      install system deps\n\
 	  make update         update local repo from GitHub\n\
+	  make                edit configurations\n\
 	  make                build and pack everything\n\
 	  make build          build kernel and rootfs\n\
 	  make cleanbuild     build everything from scratch, fast\n\

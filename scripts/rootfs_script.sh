@@ -21,6 +21,16 @@ BUILD_ID="${GIT_BRANCH}+${GIT_HASH:0:7}, ${BUILD_TIME}"
 COMMIT_ID="${GIT_BRANCH}+${GIT_HASH:0:7}, ${GIT_TIME}"
 cd -
 
+if grep -q "BR2_TOOLCHAIN_USES_GLIBC=y" $BR2_CONFIG; then
+	TOOLCHAIN="glibc"
+elif grep -q "BR2_TOOLCHAIN_USES_UCLIBC=y" $BR2_CONFIG; then
+	TOOLCHAIN="uclibc"
+elif grep -q "BR2_TOOLCHAIN_USES_MUSL=y" $BR2_CONFIG; then
+	TOOLCHAIN="musl"
+else
+	echo "Unknown"
+fi
+
 #
 # Create the /etc/os-release file
 #
@@ -50,6 +60,7 @@ LOGO=thingino-logo-icon
 ANSI_COLOR=\"1;34\"
 HOME_URL=\"https://thingino.com/\"
 ARCHITECTURE=mips
+TOOLCHAIN=${TOOLCHAIN}
 SOC=${SOC_FAMILY}
 SOC_ARCH=${INGENIC_ARCH}
 IMAGE_ID=${IMAGE_ID}
@@ -66,23 +77,31 @@ cat $tmpfile | tee -a $FILE
 # Remove the temporary file
 rm $tmpfile
 
-#
-# Create the /etc/thingino.config file
-#
+# Generate thingino.config
+${BR2_EXTERNAL}/scripts/thingino_config_gen.sh "${TARGET_DIR}/etc/thingino.config" "$BR2_EXTERNAL" "$CAMERA_SUBDIR" "$CAMERA"
 
-SYSTEM_CONFIG=${TARGET_DIR}/etc/thingino.config
+# Adjust dropbear init script order
+if [ -f "${TARGET_DIR}/etc/init.d/S50dropbear" ]; then
+	mv ${TARGET_DIR}/etc/init.d/S50dropbear ${TARGET_DIR}/etc/init.d/S30dropbear
+fi
 
-touch $SYSTEM_CONFIG
+# Toolchain specific fixes
+echo '#!/bin/sh
+LD_TRACE_LOADED_OBJECTS=1 exec "$@"' > ${TARGET_DIR}/usr/bin/ldd && chmod +x ${TARGET_DIR}/usr/bin/ldd
 
-# Add the common configuration
-cat ${BR2_EXTERNAL}/configs/common.config | tee -a $SYSTEM_CONFIG
+if grep -q "^BR2_TOOLCHAIN_USES_MUSL=y" $BR2_CONFIG >/dev/null; then
+	ln -srf ${TARGET_DIR}/lib/libc.so ${TARGET_DIR}/lib/ld-uClibc.so.0
+	ln -srf ${TARGET_DIR}/lib/libc.so ${TARGET_DIR}/usr/bin/ldd
+fi
 
-# Add the camera specific configuration
-cat ${BR2_EXTERNAL}/configs/cameras/${CAMERA}/${CAMERA}.config | tee -a $SYSTEM_CONFIG
+if grep -q "^BR2_TOOLCHAIN_USES_UCLIBC=y" $BR2_CONFIG >/dev/null; then
+	ln -srf ${TARGET_DIR}/lib/libuClibc*.so ${TARGET_DIR}/lib/libpthread.so.0
+	ln -srf ${TARGET_DIR}/lib/libuClibc*.so ${TARGET_DIR}/lib/libdl.so.0
+	ln -srf ${TARGET_DIR}/lib/libuClibc*.so ${TARGET_DIR}/lib/libm.so.0
+fi
 
-# Add the development configuration
-if [ -f ${BR2_EXTERNAL}/configs/local.config ]; then
-	cat ${BR2_EXTERNAL}/configs/local.config | tee -a $SYSTEM_CONFIG
+if grep -q "^BR2_TOOLCHAIN_USES_GLIBC=y" $BR2_CONFIG >/dev/null; then
+	ln -srf ${TARGET_DIR}/lib/libc.so.6 ${TARGET_DIR}/lib/libpthread.so.0
 fi
 
 #
@@ -95,15 +114,6 @@ fi
 
 if [ -f "${TARGET_DIR}/lib/libstdc++.so.6.0.33-gdb.py" ]; then
 	rm -vf ${TARGET_DIR}/lib/libstdc++.so.6.0.33-gdb.py
-fi
-
-if [ -f "${TARGET_DIR}/etc/init.d/S50dropbear" ]; then
-	mv ${TARGET_DIR}/etc/init.d/S50dropbear ${TARGET_DIR}/etc/init.d/S30dropbear
-fi
-
-if grep -q ^BR2_TOOLCHAIN_USES_MUSL $BR2_CONFIG >/dev/null; then
-	ln -srf ${TARGET_DIR}/lib/libc.so ${TARGET_DIR}/lib/ld-uClibc.so.0
-	ln -srf ${TARGET_DIR}/lib/libc.so ${TARGET_DIR}/usr/bin/ldd
 fi
 
 if grep -q ^BR2_PACKAGE_EXFAT_UTILS $BR2_CONFIG >/dev/null; then

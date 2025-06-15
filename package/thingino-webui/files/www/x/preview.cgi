@@ -97,16 +97,6 @@ for i in email ftp mqtt telegram webhook yadisk; do
 }
 <% done %>
 
-$$("button[data-sendto]").forEach(el => {
-	el.onclick = (ev) => {
-		ev.preventDefault();
-		if (!confirm("Are you sure?")) return false;
-		fetch("/x/send.cgi?" + new URLSearchParams({'to': el.dataset.sendto}).toString())
-			.then(res => res.json())
-			.then(data => console.log(data))
-	}
-});
-
 const preview = $("#preview");
 preview.onload = function() { URL.revokeObjectURL(this.src) }
 
@@ -122,7 +112,8 @@ function updatePreview(data) {
 }
 
 const wsPort = location.protocol === "https:" ? 8090 : 8089;
-let ws = new WebSocket(`//${document.location.hostname}:${wsPort}?token=<%= $ws_token %>`);
+const wsProto = location.protocol === "https:" ? "wss:" : "ws:";
+let ws = new WebSocket(`${wsProto}//${document.location.hostname}:${wsPort}?token=<%= $ws_token %>`);
 
 ws.onopen = () => {
 	console.log('WebSocket connection opened');

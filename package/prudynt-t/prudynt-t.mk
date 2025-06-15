@@ -13,7 +13,7 @@ endif
 
 PRUDYNT_T_GIT_SUBMODULES = YES
 
-PRUDYNT_T_DEPENDENCIES = libconfig thingino-live555 thingino-fonts ingenic-lib faac thingino-opus
+PRUDYNT_T_DEPENDENCIES = libconfig thingino-live555 thingino-fonts ingenic-lib faac thingino-opus libhelix-aac
 ifeq ($(BR2_PACKAGE_PRUDYNT_T_NG),y)
 	PRUDYNT_T_DEPENDENCIES += libwebsockets libschrift
 else
@@ -21,6 +21,14 @@ else
 endif
 ifeq ($(BR2_TOOLCHAIN_USES_MUSL),y)
 	PRUDYNT_T_DEPENDENCIES += ingenic-musl
+endif
+
+ifeq ($(BR2_TOOLCHAIN_USES_GLIBC),y)
+	PRUDYNT_CFLAGS += -DLIBC_GLIBC
+endif
+
+ifeq ($(BR2_TOOLCHAIN_USES_UCLIBC),y)
+	PRUDYNT_CFLAGS += -DLIBC_UCLIBC
 endif
 
 PRUDYNT_CFLAGS += -DPLATFORM_$(shell echo $(SOC_FAMILY) | tr a-z A-Z)
@@ -67,9 +75,9 @@ define PRUDYNT_T_INSTALL_TARGET_CMDS
 
 	sed -i 's/;.*$$/;/' $(TARGET_DIR)/etc/prudynt.cfg
 
-	if echo "$(SOC_RAM)" | grep -q "64" && ! echo "$(SOC_FAMILY)" | grep -Eq "t23"; then \
-		sed -i 's/^\([ \t]*\)# *buffers: 2;/\1buffers: 1;/' $(TARGET_DIR)/etc/prudynt.cfg; \
-	fi
+    if [ "$(SOC_RAM)" -le "64" ]; then \
+    sed -i 's/^\([ \t]*\)# *buffers: 2;/\1buffers: 1;/' $(TARGET_DIR)/etc/prudynt.cfg; \
+    fi
 
 	awk '{if(NR>1){gsub(/^[[:space:]]*/,"");if(match($$0,"^[[:space:]]*#")){$$0=""}}}{if(length($$0)){if(NR>1)printf("%s",$$0);else print $$0;}}' \
 		$(PRUDYNT_T_PKGDIR)/files/prudyntcfg.awk > $(PRUDYNT_T_PKGDIR)/files/prudyntcfg
@@ -81,6 +89,12 @@ define PRUDYNT_T_INSTALL_TARGET_CMDS
 
 	$(INSTALL) -D -m 0755 $(PRUDYNT_T_PKGDIR)/files/S95prudynt \
 		$(TARGET_DIR)/etc/init.d/S95prudynt
+
+	$(INSTALL) -D -m 0755 $(PRUDYNT_T_PKGDIR)/files/S96record \
+		$(TARGET_DIR)/etc/init.d/S96record
+
+	$(INSTALL) -D -m 0755 $(PRUDYNT_T_PKGDIR)/files/S96vbuffer \
+		$(TARGET_DIR)/etc/init.d/S96vbuffer
 
 	$(INSTALL) -D -m 0644 $(@D)/res/thingino_logo_1.bgra \
 		$(TARGET_DIR)/usr/share/images/thingino_logo_1.bgra
