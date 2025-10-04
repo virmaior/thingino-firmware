@@ -1,15 +1,12 @@
 name: firmware-x86_64
 on:
-  schedule:
-    # 00:30 PST / Nightly
-    - cron:  '30 8 * * *'
   workflow_dispatch:
     inputs:
       tg_disabled:
         type: boolean
         description: 'Disable Telegram notifications'
         required: false
-        default: false
+        default: true
       tg_scratch:
         type: boolean
         description: 'Use TG scratch channel'
@@ -25,6 +22,11 @@ on:
         description: 'Only build Tea Cup profile'
         required: false
         default: false
+      wyzeatom_only:
+        type: boolean
+        description: 'Only build ATOM/Wyze profile'
+        required: false
+        default: true  
       debug_enabled:
         type: boolean
         description: 'Debug: Generate dummy image files'
@@ -33,6 +35,8 @@ on:
 
 env:
   BR2_DL_DIR: ~/dl
+  BR2_PACKAGE_USBNET: y
+  BR2_PACKAGE_USBNET_USB_DIRECT_NCM: y
   FORCE_UNSAFE_CONFIGURE: 1
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   TAG_NAME: firmware
@@ -123,8 +127,8 @@ jobs:
       - name: Generate device matrix
         id: set-matrix
         run: |
-          if [[ "${{ github.event.inputs.teacup_only }}" == 'true' ]]; then
-            CONFIGS=$(find configs/cameras/ -type f -name "*defconfig" | sort | sed 's|.*/\(.*\)_defconfig|\1|' | grep teacup)
+          if [[ "${{ github.event.inputs.wyzeatom_only }}" == "true" ]]; then
+            CONFIGS=$(find configs/cameras/ -type f -name "*defconfig" | sort | sed 's|.*/\(.*\)_defconfig|\1|' | grep -E 'atom|wyze_cam3_t31')
           else
             CONFIGS=$(find configs/cameras/ -type f -name "*defconfig" | sort | sed 's|.*/\(.*\)_defconfig|\1|')
           fi
