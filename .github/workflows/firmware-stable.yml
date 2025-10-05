@@ -1,7 +1,5 @@
 name: firmware-stable
 on:
-  schedule:
-    - cron:  '30 8 * * *'
   workflow_dispatch:
     inputs:
       branch:
@@ -37,6 +35,11 @@ on:
         description: 'Debug: Generate dummy image files'
         required: false
         default: false
+      wyzeatom_only:
+        type: boolean
+        description: 'Only build ATOM/Wyze profile'
+        required: false
+        default: true  
       board_list:
         type: string
         description: 'Comma-separated list of boards to build (e.g. board1,board2)'
@@ -44,6 +47,8 @@ on:
 
 env:
   BR2_DL_DIR: ~/dl
+  BR2_PACKAGE_USBNET: y
+  BR2_PACKAGE_USBNET_USB_DIRECT_NCM: y
   FORCE_UNSAFE_CONFIGURE: 1
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   TAG_NAME: firmware
@@ -233,6 +238,8 @@ jobs:
             CONFIGS=$(echo "${{ github.event.inputs.board_list }}" | tr ',' '\n')
           elif [[ "${{ github.event.inputs.teacup_only }}" == 'true' ]]; then
             CONFIGS=$(find configs/cameras/ -type f -name "*defconfig" | sort | sed 's|.*/\(.*\)_defconfig|\1|' | grep teacup)
+          elif [[ "${{ github.event.inputs.wyzeatom_only }}" == "true" ]]; then
+            CONFIGS=$(find configs/cameras/ -type f -name "*defconfig" | sort | sed 's|.*/\(.*\)_defconfig|\1|' | grep -E 'atom|wyze_cam3_t31')
           else
             CONFIGS=$(find configs/cameras/ -type f -name "*defconfig" | sort | sed 's|.*/\(.*\)_defconfig|\1|')
           fi
