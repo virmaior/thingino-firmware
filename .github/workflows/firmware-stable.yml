@@ -12,6 +12,7 @@ on:
         options:
           - stable
           - master
+          - NCM-202511
       tg_disabled:
         type: boolean
         description: 'Disable Telegram notifications'
