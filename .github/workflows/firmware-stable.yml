@@ -242,7 +242,7 @@ jobs:
           elif [[ "${{ github.event.inputs.teacup_only }}" == 'true' ]]; then
             CONFIGS=$(find configs/cameras/ -type f -name "*defconfig" | sort | sed 's|.*/\(.*\)_defconfig|\1|' | grep teacup)
           elif [[ "${{ github.event.inputs.atomwyze_only }}" == "true" ]]; then
-            CONFIGS=$(find configs/cameras/ -type f -name "*defconfig" | sort | sed 's|.*/\(.*\)_defconfig|\1|' | grep -E '^(atom|wyze_c3_t31x)')
+            CONFIGS=$(find configs/cameras/ -type f -name "*defconfig" | sort | sed 's|.*/\(.*\)_defconfig|\1|' | grep -E '^(atom|wyze_cam_3_t31x)')
           else
             CONFIGS=$(find configs/cameras/ -type f -name "*defconfig" | sort | sed 's|.*/\(.*\)_defconfig|\1|')
           fi
